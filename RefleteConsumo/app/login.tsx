@@ -14,7 +14,7 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://192.168.50.152:3000/api/login', {
+      const response = await fetch('https://refleteconsumo-api.onrender.com/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
@@ -43,7 +43,7 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://192.168.50.152:3000/api/registo', {
+      const response = await fetch('https://refleteconsumo-api.onrender.com/api/registo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),

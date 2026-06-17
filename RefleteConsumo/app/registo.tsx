@@ -23,7 +23,7 @@ export default function RegistoScreen() {
 
     try {
       // 2. Enviar para o Backend
-      const response = await fetch('http://192.168.50.152:3000/api/registo', {
+      const response = await fetch('https://refleteconsumo-api.onrender.com/api/registo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
