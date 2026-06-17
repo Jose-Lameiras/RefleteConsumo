@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router'; // Ferramenta para ler o que a outra página enviou
 
 export default function HomeScreen() {
   const [nomeItem, setNomeItem] = useState('');
   const [preco, setPreco] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Apanha a pulseira VIP (token) que o LoginScreen enviou
+  const { token } = useLocalSearchParams(); 
 
   const handleInserir = async () => {
+    if (!token) {
+      Alert.alert('Erro', 'Não estás logado! Volta à página de login.');
+      return;
+    }
+
     if (!nomeItem || !preco) {
       Alert.alert('Aviso', 'Por favor, preenche todos os campos.');
       return;
@@ -19,23 +28,25 @@ export default function HomeScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // O teu novo "session_start"
         },
         body: JSON.stringify({
           nome: nomeItem,
-          preco: parseFloat(preco.replace(',', '.')), // Converte para número, suportando vírgulas
+          preco: parseFloat(preco.replace(',', '.')), 
         }),
       });
 
       if (response.ok) {
-        Alert.alert('RefleteConsumo', `Desejo registado: ${nomeItem} por ${preco}€! Agora, espera pelo prazo de reflexão.`);
-        setNomeItem(''); // Limpa o formulário
+        Alert.alert('RefleteConsumo', `Desejo registado! Espera pelo prazo de reflexão.`);
+        setNomeItem(''); 
         setPreco('');
       } else {
-        Alert.alert('Erro', 'Ocorreu um erro ao registar o desejo no servidor.');
+        const errorData = await response.json();
+        Alert.alert('Erro', errorData.error || 'Ocorreu um erro.');
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Erro', 'Não foi possível ligar ao servidor. Verifica a tua ligação.');
+      Alert.alert('Erro', 'Não foi possível ligar ao servidor.');
     } finally {
       setIsLoading(false);
     }
@@ -70,31 +81,8 @@ export default function HomeScreen() {
 }
 
 const style = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#1d3557',
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 20,
-    color: '#457b9d',
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
+  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 10, color: '#1d3557' },
+  subtitle: { fontSize: 18, marginBottom: 20, color: '#457b9d' },
+  input: { width: '100%', height: 50, borderColor: '#ccc', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, marginBottom: 15 },
 });
