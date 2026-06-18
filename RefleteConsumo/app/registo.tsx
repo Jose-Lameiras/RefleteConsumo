@@ -58,11 +58,47 @@ export default function RegistoScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Reflete Consumo!</Text>
       
-      <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
-      <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
-      <TextInput style={styles.input} placeholder="Palavra-Passe" secureTextEntry value={password} onChangeText={setPassword} />
-      <TextInput style={styles.input} placeholder="Confirmar Palavra-Passe" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
+      {/* Campo: Nome */}
+      <Text style={styles.label}>Nome Completo:</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Insere o teu nome e apelido" 
+        value={nome} 
+        onChangeText={setNome} 
+      />
       
+      {/* Campo: Email */}
+      <Text style={styles.label}>Endereço de E-mail:</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="exemplo@email.com" 
+        keyboardType="email-address" 
+        autoCapitalize="none" 
+        value={email} 
+        onChangeText={setEmail} 
+      />
+      
+      {/* Campo: Palavra-Passe */}
+      <Text style={styles.label}>Palavra-Passe:</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Escolhe uma palavra-passe segura" 
+        secureTextEntry 
+        value={password} 
+        onChangeText={setPassword} 
+      />
+      
+      {/* Campo: Confirmar Palavra-Passe */}
+      <Text style={styles.label}>Confirmar Palavra-Passe:</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Digita novamente a palavra-passe" 
+        secureTextEntry 
+        value={confirmPassword} 
+        onChangeText={setConfirmPassword} 
+      />
+      
+      {/* Campo: Género */}
       <Text style={styles.label}>Género:</Text>
       <View style={styles.row}>
         {['Masculino', 'Feminino', 'Outro'].map((g) => (
@@ -72,8 +108,9 @@ export default function RegistoScreen() {
         ))}
       </View>
 
-      <View style={styles.row}>
-        <Text>És fumador?</Text>
+      {/* Campo: Fumador */}
+      <View style={styles.rowHabito}>
+        <Text style={styles.labelHabito}>És fumador?</Text>
         <Switch value={isFumador} onValueChange={setIsFumador} />
       </View>
       
@@ -91,11 +128,13 @@ export default function RegistoScreen() {
 const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 30, justifyContent: 'center', backgroundColor: '#fff' },
   title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 30 },
-  input: { borderWidth: 1, padding: 15, marginBottom: 15, borderRadius: 5 },
-  label: { marginTop: 10, marginBottom: 5, fontWeight: 'bold' },
-  row: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
-  radio: { padding: 10, borderWidth: 1, borderRadius: 5 },
-  radioActive: { backgroundColor: '#ddd' },
-  button: { backgroundColor: '#000', padding: 15, alignItems: 'center', borderRadius: 5 },
+  input: { borderWidth: 1, padding: 15, marginBottom: 15, borderRadius: 5, borderColor: '#ccc' },
+  label: { marginTop: 5, marginBottom: 5, fontWeight: 'bold', color: '#333' },
+  row: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20, marginTop: 5 },
+  rowHabito: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30, marginTop: 10 },
+  labelHabito: { fontWeight: 'bold', color: '#333' },
+  radio: { padding: 10, borderWidth: 1, borderRadius: 5, borderColor: '#ccc', minWidth: 90, alignItems: 'center' },
+  radioActive: { backgroundColor: '#ddd', borderColor: '#888' },
+  button: { backgroundColor: '#000', padding: 15, alignItems: 'center', borderRadius: 5, marginTop: 10 },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
 });
