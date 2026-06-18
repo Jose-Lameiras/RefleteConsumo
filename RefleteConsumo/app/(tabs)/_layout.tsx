@@ -6,8 +6,6 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import desejos from './desejos';
-import { View } from 'react-native/Libraries/Components/View/View';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -18,12 +16,13 @@ export default function TabLayout() {
     const checkPerfil = async () => {
       try {
         const isFumador = await AsyncStorage.getItem('isFumador');
-        // O valor guardado é a string "true" ou "false"
         if (isFumador === 'true') {
           setShowSmokeTracker(true);
+        } else {
+          setShowSmokeTracker(false);
         }
       } catch (error) {
-        console.error("Erro ao ler perfil:", error);
+        console.error("Erro ao ler perfil no layout:", error);
       } finally {
         setIsLoading(false);
       }
@@ -31,7 +30,6 @@ export default function TabLayout() {
     checkPerfil();
   }, []);
 
-  // Se ainda estiver a verificar o perfil, não renderizamos nada ou um ecrã vazio
   if (isLoading) return null;
 
   return (
@@ -41,6 +39,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
+      
       <Tabs.Screen
         name="index"
         options={{
@@ -48,40 +47,40 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
+      
       <Tabs.Screen
         name="desejos"
         options={{
-          title: 'desejos',
+          title: 'Desejos',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+      
       <Tabs.Screen
         name="gastos"
         options={{
-          title: 'gastos',
+          title: 'Gastos',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
         }}
       />
-        <Tabs.Screen
+
+      {/* ROTA DO SMOKE: Agora sempre declarada, mas oculta dinamicamente via href */}
+      <Tabs.Screen
+        name="smoke"
+        options={{
+          title: 'Smoke',
+          tabBarHref: showSmokeTracker ? undefined : null, // <-- Remove do menu se for false de forma limpa!
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="smoke.fill" color={color} />,
+        }}
+      />
+      
+      <Tabs.Screen
         name="perfil"
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
-      
-
-      {/* Aba Dinâmica: Só aparece se o utilizador for fumador */}
-      {showSmokeTracker && (
-        <Tabs.Screen
-          name="smoke"
-          options={{
-            title: 'Smoke',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="smoke.fill" color={color} />,
-          }}
-        />
-      )}
     </Tabs>
   );
 }
-

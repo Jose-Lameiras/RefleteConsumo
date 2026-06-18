@@ -176,7 +176,7 @@ router.get('/desejos', verificarToken, async (req, res) => {
 // 2. ROTA POST - Inserção de Desejo (Alta precisão com data e hora do seletor de rodas)
 router.post('/desejos', verificarToken, async (req, res) => {
   try {
-    const { nome, preco, categoria, diasCooldown, dataLiberacao: dataEnviada } = req.body;
+    const { nome, preco, category, diasCooldown, dataLiberacao: dataEnviada } = req.body;
     
     let dataLiberacao = dataEnviada ? new Date(dataEnviada) : new Date();
     if (!dataEnviada) {
@@ -187,7 +187,7 @@ router.post('/desejos', verificarToken, async (req, res) => {
     const novoDesejo = {
       nome, 
       preco, 
-      categoria,
+      categoria: category,
       utilizadorId: req.utilizador.id,
       dataRegisto: new Date(),
       dataLiberacao,
@@ -228,6 +228,46 @@ router.get('/gastos', verificarToken, async (req, res) => {
     res.json(gastos);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao buscar gastos.' });
+  }
+});
+
+// ========================================================
+// ROTAS DO SMOKE TRACKER (MONITORIZAÇÃO DE TABACO)
+// ========================================================
+
+// 1. ROTA POST - Registar um cigarro fumado
+router.post('/smoke/registar', verificarToken, async (req, res) => {
+  try {
+    const { precoMaco, quantidadeNoMaco } = req.body;
+    const precoPorCigarro = (parseFloat(precoMaco) || 0) / (parseInt(quantidadeNoMaco) || 20);
+
+    const smokeCollection = getCollection('smoke_tracker');
+    const novoRegisto = {
+      utilizadorId: req.utilizador.id,
+      dataHora: new Date(),
+      custo: precoPorCigarro
+    };
+
+    await smokeCollection.insertOne(novoRegisto);
+    res.status(201).json({ message: 'Cigarro registado!', registo: novoRegisto });
+  } catch (error) {
+    console.error('Erro ao registar fumo:', error);
+    res.status(500).json({ error: 'Erro interno ao guardar no servidor.' });
+  }
+});
+
+// 2. ROTA GET - Listar todo o histórico de fumo
+router.get('/smoke/historico', verificarToken, async (req, res) => {
+  try {
+    const smokeCollection = getCollection('smoke_tracker');
+    const historico = await smokeCollection
+      .find({ utilizadorId: req.utilizador.id })
+      .sort({ dataHora: -1 })
+      .toArray();
+    res.json(historico);
+  } catch (error) {
+    console.error('Erro ao buscar histórico:', error);
+    res.status(500).json({ error: 'Erro ao buscar histórico.' });
   }
 });
 
