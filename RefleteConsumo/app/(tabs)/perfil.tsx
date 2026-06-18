@@ -18,8 +18,6 @@ export default function PerfilScreen() {
   const [confirmPass, setConfirmPass] = useState<string>('');
   
   const router = useRouter();
-  
-  // Opções de género alinhadas com o RegistoScreen
   const opcoesGenero: string[] = ['Masculino', 'Feminino', 'Outro'];
 
   useEffect(() => { 
@@ -34,15 +32,15 @@ export default function PerfilScreen() {
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/perfil', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-          const data = await response.json();
-          console.log("=== DADOS DO SERVIDOR ===", data); // <--- ADICIONA ESTA LINHA
-
-          if (response.ok && data) {
-            setNome(data.nome || '');
-            setEmail(data.email || '');
-            setGenero(data.genero || '');
-            setIsFumador(!!data.isFumador);
-          }
+      const data = await response.json();
+      
+      if (response.ok && data) {
+        setNome(data.nome || '');
+        setEmail(data.email || '');
+        setGenero(data.genero || '');
+        setIsFumador(!!data.isFumador);
+      }
+      
       const foto = await AsyncStorage.getItem('userImage');
       setImage(foto);
     } catch (error) {
@@ -80,22 +78,31 @@ export default function PerfilScreen() {
         body: JSON.stringify({ nome, email, genero, isFumador }),
       });
 
-      // Atualizar Password se preenchida
-      if (newPass) {
+      if (!response.ok) throw new Error("Erro ao atualizar dados do perfil.");
+
+      // Atualizar Password APENAS se o utilizador digitou algo
+      if (newPass.trim() !== '') {
+        if (!oldPass.trim()) throw new Error("Por favor, introduz a tua password antiga para autorizar a alteração.");
         if (newPass !== confirmPass) throw new Error("As novas passwords não coincidem.");
+        
         const passRes = await fetch('https://refleteconsumo-api.onrender.com/api/update-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }),
         });
-        if (!passRes.ok) throw new Error("Erro ao validar password antiga.");
+        
+        const passData = await passRes.json();
+        if (!passRes.ok) throw new Error(passData.error || "Erro ao validar password antiga.");
       }
 
-      if (!response.ok) throw new Error("Erro ao atualizar perfil.");
+      // Limpar os campos de password após o sucesso
+      setOldPass('');
+      setNewPass('');
+      setConfirmPass('');
       
       setIsEditing(false);
-      Alert.alert("Sucesso", "Perfil atualizado no servidor!");
-      carregarDadosDoServidor(); // Recarrega os dados limpos do MongoDB
+      Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
+      carregarDadosDoServidor(); 
     } catch (error: any) {
       Alert.alert("Erro", error.message);
     } finally {
@@ -132,10 +139,17 @@ export default function PerfilScreen() {
             <Switch value={isFumador} onValueChange={setIsFumador} />
           </View>
 
-          <Text style={styles.inputLabel}>Segurança (Alterar Password)</Text>
-          <TextInput placeholder="Digita a tua password antiga" secureTextEntry style={styles.input} onChangeText={setOldPass} />
-          <TextInput placeholder="Digita a nova password" secureTextEntry style={styles.input} onChangeText={setNewPass} />
-          <TextInput placeholder="Confirma a nova password" secureTextEntry style={styles.input} onChangeText={setConfirmPass} />
+          {/* Secção de segurança com títulos por cima de cada campo */}
+          <Text style={styles.sectionTitle}>Segurança (Alterar Password)</Text>
+          
+          <Text style={styles.inputLabel}>Password Antiga</Text>
+          <TextInput placeholder="Digita a tua password antiga" secureTextEntry style={styles.input} value={oldPass} onChangeText={setOldPass} />
+          
+          <Text style={styles.inputLabel}>Nova Password</Text>
+          <TextInput placeholder="Digita a nova password" secureTextEntry style={styles.input} value={newPass} onChangeText={setNewPass} />
+          
+          <Text style={styles.inputLabel}>Confirmar Nova Password</Text>
+          <TextInput placeholder="Confirma a nova password" secureTextEntry style={styles.input} value={confirmPass} onChangeText={setConfirmPass} />
           
           {isLoading ? <ActivityIndicator size="large" color="#2a9d8f" /> : (
             <TouchableOpacity style={styles.saveButton} onPress={handleGuardar}><Text style={styles.btnText}>Guardar Alterações</Text></TouchableOpacity>
@@ -164,8 +178,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   photoBox: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#333', alignSelf: 'center', marginBottom: 20, justifyContent: 'center', alignItems: 'center' },
   photo: { width: 100, height: 100, borderRadius: 50 },
-  inputLabel: { fontWeight: 'bold', marginTop: 10, color: '#333' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 5, marginTop: 5, marginBottom: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 25, marginBottom: 10, color: '#264653', borderBottomWidth: 1, borderBottomColor: '#eee', paddingBottom: 5 },
+  inputLabel: { fontWeight: 'bold', marginTop: 12, color: '#333' },
+  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 5, marginTop: 5, marginBottom: 5 },
   infoCard: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' },
   label: { color: '#666', fontSize: 12 },
   val: { fontSize: 16, fontWeight: '500', marginTop: 2 },
@@ -173,7 +188,7 @@ const styles = StyleSheet.create({
   radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: '#ccc', marginRight: 10 },
   radioSelected: { backgroundColor: '#333', borderColor: '#333' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 15 },
-  saveButton: { backgroundColor: '#2a9d8f', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 20 },
+  saveButton: { backgroundColor: '#2a9d8f', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 25 },
   editButton: { backgroundColor: '#264653', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 20 },
   btnText: { color: '#fff', fontWeight: 'bold' },
   logoutButton: { marginTop: 40, alignItems: 'center', padding: 15, marginBottom: 30 },

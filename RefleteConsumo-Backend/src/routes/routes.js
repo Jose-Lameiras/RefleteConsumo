@@ -127,6 +127,40 @@ router.put('/update-perfil', verificarToken, async (req, res) => {
   }
 });
 
+// Rota para Atualizar a Password (Compatível com o perfil.tsx)
+router.post('/update-password', verificarToken, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const usersCollection = getCollection('utilizadores');
+
+    // 1. Procurar o utilizador na BD
+    const utilizador = await usersCollection.findOne({ _id: new pkg.ObjectId(req.utilizador.id) });
+    if (!utilizador) {
+      return res.status(404).json({ error: 'Utilizador não encontrado.' });
+    }
+
+    // 2. Verificar se a password antiga está correta
+    const passwordCorreta = await bcrypt.compare(oldPassword, utilizador.password);
+    if (!passwordCorreta) {
+      return res.status(400).json({ error: 'A password antiga está incorreta.' });
+    }
+
+    // 3. Encriptar a nova password e atualizar
+    const salt = await bcrypt.genSalt(10);
+    const novaPasswordEncriptada = await bcrypt.hash(newPassword, salt);
+
+    await usersCollection.updateOne(
+      { _id: new pkg.ObjectId(req.utilizador.id) },
+      { $set: { password: novaPasswordEncriptada } }
+    );
+
+    res.json({ message: 'Password atualizada com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao atualizar password:', error);
+    res.status(500).json({ error: 'Erro interno ao atualizar password.' });
+  }
+});
+
 // ========================================================
 // ROTAS DE DESEJOS E GASTOS
 // ========================================================
