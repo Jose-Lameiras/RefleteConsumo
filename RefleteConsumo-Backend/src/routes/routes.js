@@ -1,172 +1,234 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View, TouchableOpacity, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import pkg from 'mongodb';
+import { getCollection } from '../db.js';
 
-export default function HomeScreen() {
-  const [nomeItem, setNomeItem] = useState('');
-  const [preco, setPreco] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [cooldownValue, setCooldownValue] = useState(''); // Novo estado para a quantidade (ex: 1, 5, 2)
-  const [cooldownUnit, setCooldownUnit] = useState('dias'); // Novo estado para a unidade (padrão: dias)
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+const router = express.Router();
+const jwtSecret = process.env.JWT_SECRET;
 
-  // Opções flexíveis alinhadas com o teu novo backend
-  const unidadesTempo = ['minutos', 'horas', 'dias', 'meses'];
-
-  const handleInserir = async () => {
-    if (!nomeItem || !preco || !categoria || !cooldownValue) {
-      Alert.alert('Aviso', 'Preenche todos os campos.');
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-
-      const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ 
-          nome: nomeItem, 
-          preco: parseFloat(preco.replace(',', '.')),
-          categoria,
-          cooldownValue: cooldownValue, // Enviado para a API flexível
-          cooldownUnit: cooldownUnit    // Enviado para a API flexível
-        }),
-      });
-
-      if (response.ok) {
-        Alert.alert('Sucesso', 'Desejo registado!');
-        setNomeItem(''); 
-        setPreco(''); 
-        setCategoria('');
-        setCooldownValue('');
-        setCooldownUnit('dias');
-      } else {
-        const data = await response.json();
-        Alert.alert('Erro', data.error || 'Falha ao guardar desejo.');
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Falha na rede.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <ScrollView contentContainerStyle={style.container}>
-      <Text style={style.title}>Novo Desejo</Text>
-      
-      <Text style={style.label}>Nome do Produto:</Text>
-      <TextInput style={style.input} value={nomeItem} onChangeText={setNomeItem} placeholder="Ex: Ténis de corrida" />
-      
-      <Text style={style.label}>Preço (€):</Text>
-      <TextInput style={style.input} keyboardType="numeric" value={preco} onChangeText={setPreco} placeholder="0.00" />
-      
-      <Text style={style.label}>Categoria:</Text>
-      <TextInput style={style.input} value={categoria} onChangeText={setCategoria} placeholder="Ex: Lazer" />
-
-      {/* Novo campo: Quantidade de Tempo */}
-      <Text style={style.label}>Tempo para Reflexão (Valor):</Text>
-      <TextInput style={style.input} keyboardType="numeric" value={cooldownValue} onChangeText={setCooldownValue} placeholder="Ex: 1, 5, 2..." />
-
-      {/* Novo campo: Seletor Visual de Unidade de Tempo */}
-      <Text style={style.label}>Unidade de Tempo:</Text>
-      <View style={style.row}>
-        {unidadesTempo.map((unidade) => (
-          <TouchableOpacity 
-            key={unidade} 
-            onPress={() => setCooldownUnit(unidade)} 
-            style={[style.radio, cooldownUnit === unidade && style.radioActive]}
-          >
-            <Text style={[style.radioText, cooldownUnit === unidade && style.radioTextActive]}>
-              {unidade.charAt(0).toUpperCase() + unidade.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#2ec4b6" />
-      ) : (
-        <TouchableOpacity style={style.button} onPress={handleInserir}>
-          <Text style={style.buttonText}>Guardar Desejo</Text>
-        </TouchableOpacity>
-      )}
-    </ScrollView>
-  );
+if (!jwtSecret) {
+  console.error('Erro: JWT_SECRET não está definido no ficheiro .env');
+  process.exit(1);
 }
 
-const style = StyleSheet.create({
-  container: { 
-    flexGrow: 1, 
-    padding: 20, 
-    justifyContent: 'center', 
-    backgroundColor: '#ffffff' 
-  },
-  title: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    marginBottom: 20, 
-    color: '#000000' 
-  },
-  label: { 
-    fontSize: 14, 
-    fontWeight: '600', 
-    marginBottom: 5, 
-    color: '#333333' 
-  },
-  input: { 
-    height: 45, 
-    borderWidth: 1, 
-    borderColor: '#cccccc', 
-    borderRadius: 8, 
-    paddingHorizontal: 10, 
-    marginBottom: 15,
-    color: '#000000', 
-    backgroundColor: '#f9f9f9' 
-  },
-  row: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 25, 
-    marginTop: 5 
-  },
-  radio: { 
-    paddingVertical: 10, 
-    borderWidth: 1, 
-    borderRadius: 8, 
-    borderColor: '#cccccc', 
-    flex: 1, 
-    marginRight: 4, 
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9'
-  },
-  radioActive: { 
-    backgroundColor: '#2ec4b6', 
-    borderColor: '#2ec4b6' 
-  },
-  radioText: { 
-    fontSize: 11, 
-    color: '#555555', 
-    fontWeight: '500' 
-  },
-  radioTextActive: { 
-    color: '#ffffff', 
-    fontWeight: 'bold' 
-  },
-  button: { 
-    backgroundColor: '#2ec4b6', 
-    padding: 14, 
-    alignItems: 'center', 
-    borderRadius: 8, 
-    marginTop: 10 
-  },
-  buttonText: { 
-    color: '#ffffff', 
-    fontSize: 16, 
-    fontWeight: 'bold' 
+// Middleware de Autenticação (Protege as rotas de desejos e perfil)
+const verificarToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Acesso negado. Token não fornecido.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const verificado = jwt.verify(token, jwtSecret);
+    req.utilizador = verificado; // Guarda os dados do utilizador (id, email) no pedido
+    next();
+  } catch (error) {
+    res.status(400).json({ error: 'Token inválido ou expirado.' });
+  }
+};
+
+// ========================================================
+// ROTAS DE AUTENTICAÇÃO E PERFIL
+// ========================================================
+
+// Rota de Registo Completo
+router.post('/registo', async (req, res) => {
+  try {
+    const { nome, email, password, genero, isFumador } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Preenche os campos obrigatórios (email e password).' });
+    }
+
+    const usersCollection = getCollection('utilizadores');
+    const utilizadorExistente = await usersCollection.findOne({ email: email.toLowerCase() });
+    
+    if (utilizadorExistente) {
+      return res.status(400).json({ error: 'Este email já está registado.' });
+    }
+
+    // Encriptar a password
+    const salt = await bcrypt.genSalt(10);
+    const passwordEncriptada = await bcrypt.hash(password, salt);
+
+    const novoUtilizador = { 
+      nome, 
+      email: email.toLowerCase(), 
+      password: passwordEncriptada, 
+      genero, 
+      isFumador, 
+      dataRegisto: new Date() 
+    };
+
+    await usersCollection.insertOne(novoUtilizador);
+    console.log(`👤 Novo utilizador registado: ${email}`);
+    res.status(201).json({ message: 'Registo completo!' });
+  } catch (error) { 
+    console.error('Erro no registo:', error);
+    res.status(500).json({ error: 'Erro no registo.' }); 
   }
 });
+
+// Rota de Login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const usersCollection = getCollection('utilizadores');
+
+    const utilizador = await usersCollection.findOne({ email: email.toLowerCase() });
+    if (!utilizador) {
+      return res.status(400).json({ error: 'Email ou password incorretos.' });
+    }
+
+    const passwordCorreta = await bcrypt.compare(password, utilizador.password);
+    if (!passwordCorreta) {
+      return res.status(400).json({ error: 'Email ou password incorretos.' });
+    }
+
+    // Criar o Token com o ID do utilizador
+    const token = jwt.sign(
+      { id: utilizador._id.toString(), email: utilizador.email },
+      jwtSecret,
+      { expiresIn: '7d' }
+    );
+
+    console.log(`🔑 Login efetuado por: ${email}`);
+    res.status(200).json({ message: 'Login com sucesso!', token });
+  } catch (error) {
+    console.error('Erro no login:', error);
+    res.status(500).json({ error: 'Erro ao fazer login.' });
+  }
+});
+
+// Rota de Perfil (Busca TUDO)
+router.get('/perfil', verificarToken, async (req, res) => {
+  try {
+    const usersCollection = getCollection('utilizadores');
+    const user = await usersCollection.findOne({ _id: new pkg.ObjectId(req.utilizador.id) }, { projection: { password: 0 } });
+    res.json(user);
+  } catch (error) { 
+    res.status(500).json({ error: 'Erro ao buscar perfil.' }); 
+  }
+});
+
+// Rota de Update (Edita TUDO)
+router.put('/update-perfil', verificarToken, async (req, res) => {
+  try {
+    const { nome, email, genero, isFumador } = req.body;
+    const usersCollection = getCollection('utilizadores');
+    await usersCollection.updateOne({ _id: new pkg.ObjectId(req.utilizador.id) }, { $set: { nome, email, genero, isFumador } });
+    res.json({ message: 'Perfil editado!' });
+  } catch (error) { 
+    res.status(500).json({ error: 'Erro ao editar.' }); 
+  }
+});
+
+// Rota para Atualizar a Password
+router.post('/update-password', verificarToken, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const usersCollection = getCollection('utilizadores');
+
+    const utilizador = await usersCollection.findOne({ _id: new pkg.ObjectId(req.utilizador.id) });
+    if (!utilizador) {
+      return res.status(404).json({ error: 'Utilizador não encontrado.' });
+    }
+
+    const passwordCorreta = await bcrypt.compare(oldPassword, utilizador.password);
+    if (!passwordCorreta) {
+      return res.status(400).json({ error: 'A password antiga está incorreta.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const novaPasswordEncriptada = await bcrypt.hash(newPassword, salt);
+
+    await usersCollection.updateOne(
+      { _id: new pkg.ObjectId(req.utilizador.id) },
+      { $set: { password: novaPasswordEncriptada } }
+    );
+
+    res.json({ message: 'Password atualizada com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao atualizar password:', error);
+    res.status(500).json({ error: 'Erro interno ao atualizar password.' });
+  }
+});
+
+// ========================================================
+// ROTAS DE DESEJOS E GASTOS
+// ========================================================
+
+// 1. ROTA GET - Listagem de Desejos
+router.get('/desejos', verificarToken, async (req, res) => {
+  try {
+    const devicesCollection = getCollection('desejos');
+    const desejos = await devicesCollection.find({ utilizadorId: req.utilizador.id }).toArray();
+    res.json(desejos);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar desejos.' });
+  }
+});
+
+// 2. ROTA POST - Inserção de Desejo (Alta precisão com data e hora do seletor de rodas)
+router.post('/desejos', verificarToken, async (req, res) => {
+  try {
+    const { nome, preco, categoria, diasCooldown, dataLiberacao: dataEnviada } = req.body;
+    
+    let dataLiberacao = dataEnviada ? new Date(dataEnviada) : new Date();
+    if (!dataEnviada) {
+      dataLiberacao.setDate(dataLiberacao.getDate() + parseInt(diasCooldown || 0));
+    }
+
+    const devicesCollection = getCollection('desejos');
+    const novoDesejo = {
+      nome, 
+      preco, 
+      categoria,
+      utilizadorId: req.utilizador.id,
+      dataRegisto: new Date(),
+      dataLiberacao,
+      status: 'em_reflexao'
+    };
+    await devicesCollection.insertOne(novoDesejo);
+    res.status(201).json(novoDesejo);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar desejo.' });
+  }
+});
+
+// 3. ROTA POST - Decisão (Conversão para Gasto)
+router.post('/desejos/decidir', verificarToken, async (req, res) => {
+  try {
+    const { desejoId, comprar } = req.body;
+    const status = comprar ? 'comprado' : 'descartado';
+    
+    const devicesCollection = getCollection('desejos');
+    await devicesCollection.updateOne(
+      { _id: new pkg.ObjectId(desejoId), utilizadorId: req.utilizador.id },
+      { $set: { status } }
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao processar decisão.' });
+  }
+});
+
+// 4. ROTA GET - Listagem de Gastos
+router.get('/gastos', verificarToken, async (req, res) => {
+  try {
+    const devicesCollection = getCollection('desejos');
+    const gastos = await devicesCollection.find({ 
+      utilizadorId: req.utilizador.id, 
+      status: 'comprado' 
+    }).toArray();
+    res.json(gastos);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar gastos.' });
+  }
+});
+
+export default router;
