@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View, Platform, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View, Platform, TouchableOpacity, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,7 +14,10 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowPicker(Platform.OS === 'ios');
+    // No Android, fecha o picker ao selecionar; no iOS mantém o comportamento padrão
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+    }
     if (selectedDate) setDataAlvo(selectedDate);
   };
 
@@ -27,9 +30,6 @@ export default function HomeScreen() {
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      // Calculamos a diferença de dias para enviar ao backend
-      const diffTime = dataAlvo.getTime() - new Date().getTime();
-      const diasCooldown = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos', {
         method: 'POST',
@@ -38,13 +38,18 @@ export default function HomeScreen() {
           nome: nomeItem, 
           preco: parseFloat(preco.replace(',', '.')),
           categoria,
-          diasCooldown 
+          dataLiberacao: dataAlvo.toISOString() // Enviamos a data e hora exata que deslizaste
         }),
       });
 
       if (response.ok) {
         Alert.alert('Sucesso', 'Desejo registado!');
-        setNomeItem(''); setPreco(''); setCategoria('');
+        setNomeItem(''); 
+        setPreco(''); 
+        setCategoria('');
+        setDataAlvo(new Date()); // Faz reset para a hora atual
+      } else {
+        Alert.alert('Erro', 'Não foi possível guardar o desejo.');
       }
     } catch (error) {
       Alert.alert('Erro', 'Falha na rede.');
@@ -54,7 +59,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={style.container}>
+    <ScrollView contentContainerStyle={style.container}>
       <Text style={style.title}>Novo Desejo</Text>
       
       <Text style={style.label}>Nome do Produto:</Text>
@@ -66,38 +71,61 @@ export default function HomeScreen() {
       <Text style={style.label}>Categoria:</Text>
       <TextInput style={style.input} value={categoria} onChangeText={setCategoria} placeholder="Ex: Lazer" />
 
-      <Text style={style.label}>Data para Reflexão:</Text>
+      <Text style={style.label}>Definir Data e Hora de Libertação:</Text>
       <TouchableOpacity style={style.dateButton} onPress={() => setShowPicker(true)}>
-        <Text>{dataAlvo.toLocaleDateString()}</Text>
+        {/* Mostra a data, horas e minutos escolhidos no botão */}
+        <Text style={style.dateText}>
+          📅 {dataAlvo.toLocaleDateString()} às {dataAlvo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
       </TouchableOpacity>
 
       {showPicker && (
-        <DateTimePicker value={dataAlvo} mode="date" display="default" onChange={handleDateChange} minimumDate={new Date()} />
+        <View style={style.pickerWrapper}>
+          <DateTimePicker 
+            value={dataAlvo} 
+            mode="datetime"       // <--- Ativa Data + Hora juntas
+            display="spinner"     // <--- Força o efeito de rodas para deslizar
+            onChange={handleDateChange} 
+            minimumDate={new Date()} 
+            textColor="#000000"   // Garante visibilidade no iOS
+          />
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity style={style.closeButtonIOS} onPress={() => setShowPicker(false)}>
+              <Text style={style.closeButtonTextIOS}>Confirmar</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       )}
 
-      {isLoading ? <ActivityIndicator size="large" color="#2ec4b6" /> : <Button title="Guardar Desejo" onPress={handleInserir} color="#2ec4b6" /> }
-    </View>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#2ec4b6" />
+      ) : (
+        <TouchableOpacity style={style.submitButton} onPress={handleInserir}>
+          <Text style={style.submitButtonText}>Guardar Desejo</Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
   );
 }
 
 const style = StyleSheet.create({
   container: { 
-    flex: 1, 
+    flexGrow: 1, 
     padding: 20, 
     justifyContent: 'center', 
-    backgroundColor: '#ffffff' // Fundo branco fixo
+    backgroundColor: '#ffffff' 
   },
   title: { 
     fontSize: 24, 
     fontWeight: 'bold', 
-    marginBottom: 20, 
-    color: '#000000' // Texto preto
+    marginBottom: 25, 
+    color: '#000000' 
   },
   label: { 
     fontSize: 14, 
     fontWeight: '600', 
-    marginBottom: 5, 
-    color: '#333333' // Texto cinzento escuro
+    marginBottom: 6, 
+    color: '#333333' 
   },
   input: { 
     height: 45, 
@@ -106,17 +134,51 @@ const style = StyleSheet.create({
     borderRadius: 8, 
     paddingHorizontal: 10, 
     marginBottom: 15,
-    color: '#000000', // Texto digitado preto
-    backgroundColor: '#f9f9f9' // Fundo cinzento muito claro para contraste
+    color: '#000000', 
+    backgroundColor: '#f9f9f9' 
   },
   dateButton: { 
-    height: 45, 
+    height: 48, 
     borderWidth: 1, 
     borderColor: '#2ec4b6', 
     borderRadius: 8, 
     justifyContent: 'center', 
-    paddingHorizontal: 10, 
-    marginBottom: 20,
+    paddingHorizontal: 12, 
+    marginBottom: 25,
     backgroundColor: '#ffffff'
+  },
+  dateText: {
+    color: '#000000',
+    fontSize: 15,
+    fontWeight: '500'
+  },
+  pickerWrapper: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    marginBottom: 20,
+    padding: 10
+  },
+  closeButtonIOS: {
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#2ec4b6',
+    borderRadius: 6,
+    marginTop: 10
+  },
+  closeButtonTextIOS: {
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+  submitButton: {
+    backgroundColor: '#2ec4b6',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10
+  },
+  submitButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold'
   }
 });

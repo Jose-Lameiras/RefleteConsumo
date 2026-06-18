@@ -11,7 +11,6 @@ export default function TabTwoScreen() {
     try {
       setIsLoading(true);
       const token = await AsyncStorage.getItem('userToken');
-      // Importante: Se isto falhar silenciosamente, o ecrã fica vazio
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -45,9 +44,17 @@ export default function TabTwoScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>{item.nome}</Text>
               <Text>💰 {item.preco}€ | 📂 {item.categoria}</Text>
-              <Text style={{ marginTop: 5, color: '#666' }}>
+              
+              <Text style={{ marginTop: 5, color: '#666', fontWeight: '500' }}>
                 Status: {item.status === 'em_reflexao' ? 'Em reflexão' : item.status}
               </Text>
+
+              {/* Se o desejo estiver em reflexão, mostra o dia e hora exata em que liberta */}
+              {item.status === 'em_reflexao' && item.dataLiberacao && (
+                <Text style={styles.cooldownText}>
+                  ⏳ Liberta em: {new Date(item.dataLiberacao).toLocaleString('pt-PT')}
+                </Text>
+              )}
             </View>
           )}
         />
@@ -61,5 +68,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
   card: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 15, elevation: 3 },
   cardTitle: { fontSize: 18, fontWeight: 'bold' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: '#888' }
+  emptyText: { textAlign: 'center', marginTop: 50, color: '#888' },
+  cooldownText: { fontSize: 12, color: '#e63946', marginTop: 4, fontWeight: 'bold' } // Estilo da data
 });

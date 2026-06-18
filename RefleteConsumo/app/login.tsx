@@ -1,83 +1,102 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email || !password) return Alert.alert('Aviso', 'Preenche todos os campos.');
+    if (!email || !password) {
+      return Alert.alert('Erro', 'Por favor, preenche todos os campos.');
+    }
+
     setIsLoading(true);
 
     try {
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
       });
+
       const data = await response.json();
 
       if (response.ok) {
-        // Grava o token para manter a sessão aberta
-        await AsyncStorage.setItem('userToken', data.token); 
-        router.replace('/(tabs)');
+        // Guardar o token de autenticação enviado pelo teu backend
+        await AsyncStorage.setItem('userToken', data.token);
+        
+        Alert.alert('Sucesso!', 'Login efetuado com sucesso.');
+        
+        // Redireciona para o ecrã principal (ajusta o caminho se for diferente, ex: '/(tabs)/desejos')
+        router.replace('/perfil'); 
       } else {
-        Alert.alert('Erro', data.error || 'Credenciais inválidas.');
+        Alert.alert('Erro', data.error || 'Email ou password incorretos.');
       }
     } catch (error) {
-      Alert.alert('Erro', 'Falha na rede.');
+      Alert.alert('Erro', 'Não foi possível ligar ao servidor.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Agora esta função apenas navega para a nova página de registo
-  const handleIrParaRegisto = () => {
-    router.push('/registo'); 
-  };
-
   return (
-    <View style={style.container}>
-      <Text style={style.title}>RefleteConsumo</Text>
-      <Text style={style.subtitle}>Identifica-te</Text>
-      
-      <TextInput 
-        style={style.input} 
-        placeholder="Email" 
-        autoCapitalize="none" 
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Reflete Consumo</Text>
+
+      {/* Campo: Email */}
+      <Text style={styles.label}>Endereço de E-mail:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="exemplo@email.com"
         keyboardType="email-address"
-        value={email} 
-        onChangeText={setEmail} 
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
       />
-      <TextInput 
-        style={style.input} 
-        placeholder="Password" 
-        secureTextEntry 
-        value={password} 
-        onChangeText={setPassword} 
+
+      {/* Campo: Palavra-Passe */}
+      <Text style={styles.label}>Palavra-Passe:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Digita a tua palavra-passe"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
       />
-      
+
       {isLoading ? (
-        <ActivityIndicator size="large" color="#2ec4b6" />
+        <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
       ) : (
-        <View style={style.btnContainer}>
-          <Button title="Entrar" onPress={handleLogin} color="#2ec4b6" />
-          <View style={{ marginVertical: 10 }} />
-          <Button title="Criar Conta" onPress={handleIrParaRegisto} color="#457b9d" />
-        </View>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Entrar</Text>
+        </TouchableOpacity>
       )}
-    </View>
+
+      {/* Atalho para ir para o registo caso não tenha conta */}
+      <TouchableOpacity 
+        style={styles.registerLink} 
+        onPress={() => router.push('/registo')}
+      >
+        <Text style={styles.registerText}>Não tens conta? Cria uma aqui</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
-const style = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', padding: 20 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#1d3557', marginBottom: 10 },
-  subtitle: { fontSize: 16, color: '#457b9d', marginBottom: 25 },
-  input: { width: '100%', height: 50, borderColor: '#ccc', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, marginBottom: 15 },
-  btnContainer: { width: '100%', marginTop: 10 }
+const styles = StyleSheet.create({
+  container: { flexGrow: 1, padding: 30, justifyContent: 'center', backgroundColor: '#fff' },
+  title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 40 },
+  input: { borderWidth: 1, padding: 15, marginBottom: 20, borderRadius: 5, borderColor: '#ccc' },
+  label: { marginBottom: 8, fontWeight: 'bold', color: '#333' },
+  button: { backgroundColor: '#000', padding: 15, alignItems: 'center', borderRadius: 5, marginTop: 15 },
+  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  registerLink: { marginTop: 25, alignItems: 'center' },
+  registerText: { color: '#666', textDecorationLine: 'underline' }
 });
