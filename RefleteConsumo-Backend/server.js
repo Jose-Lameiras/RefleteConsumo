@@ -136,50 +136,104 @@ async function iniciarServidor() {
       }
     });
 
-    // ========================================================
-    // ROTAS DE DESEJOS (PROTEGIDAS POR TOKEN)
-    // ========================================================
+          // Rota de Registo Completa
+      app.post('/api/registo', async (req, res) => {
+        try {
+          const { nome, email, password, genero, isFumador } = req.body;
+          const utilizadorExistente = await usersCollection.findOne({ email });
+          if (utilizadorExistente) return res.status(400).json({ error: 'Email já existe.' });
 
-    app.get('/', (req, res) => {
-      res.send('O backend do RefleteConsumo está a correr perfeitamente!');
+          const passwordEncriptada = await bcrypt.hash(password, 10);
+          const novoUtilizador = { 
+            nome, email: email.toLowerCase(), password: passwordEncriptada, 
+            genero, isFumador, dataRegisto: new Date() 
+          };
+          await usersCollection.insertOne(novoUtilizador);
+          res.status(201).json({ message: 'Registo completo!' });
+        } catch (error) { res.status(500).json({ error: 'Erro no registo.' }); }
+      });
+
+    // Rota de Perfil (Busca TUDO)
+    app.get('/api/perfil', verificarToken, async (req, res) => {
+      try {
+        const user = await usersCollection.findOne({ _id: new pkg.ObjectId(req.utilizador.id) }, { projection: { password: 0 } });
+        res.json(user);
+      } catch (error) { res.status(500).json({ error: 'Erro ao buscar perfil.' }); }
     });
 
-    // 1. ROTA GET - Busca APENAS os desejos do utilizador logado
+    // Rota de Update (Edita TUDO)
+    app.put('/api/update-perfil', verificarToken, async (req, res) => {
+      try {
+        const { nome, email, genero, isFumador } = req.body;
+        await usersCollection.updateOne({ _id: new pkg.ObjectId(req.utilizador.id) }, { $set: { nome, email, genero, isFumador } });
+        res.json({ message: 'Perfil editado!' });
+      } catch (error) { res.status(500).json({ error: 'Erro ao editar.' }); }
+    });
+
+    // ========================================================
+    // ROTAS DE DESEJOS E GASTOS
+    // ========================================================
+
+// ========================================================
+    // ROTAS DE DESEJOS E GASTOS (VERSÃO CORRIGIDA)
+    // ========================================================
+
+    // 1. ROTA GET - Listagem de Desejos
     app.get('/api/desejos', verificarToken, async (req, res) => {
       try {
-        // Filtra os desejos pelo ID do utilizador que vem no Token
         const desejos = await devicesCollection.find({ utilizadorId: req.utilizador.id }).toArray();
-        res.status(200).json(desejos);
+        res.json(desejos);
       } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        res.status(500).json({ error: 'Erro ao buscar dados na base de dados.' });
+        res.status(500).json({ error: 'Erro ao buscar desejos.' });
       }
     });
 
-    // 2. ROTA POST - Insere um desejo associado ao utilizador logado
+    // 2. ROTA POST - Inserção de Desejo
     app.post('/api/desejos', verificarToken, async (req, res) => {
-      console.log(`🚨 NOVO DESEJO SOLICITADO PELO UTILIZADOR: ${req.utilizador.email}`);
-
       try {
-        const novoDesejo = {
-          nome: req.body.nome,
-          preco: req.body.preco,
-          utilizadorId: req.utilizador.id, // <--- Relacionamento criado aqui!
-          dataRegisto: new Date(),
-          status: 'em_reflexao'
-        }; 
+        const { nome, preco, categoria, diasCooldown } = req.body;
+        const dataLiberacao = new Date();
+        dataLiberacao.setDate(dataLiberacao.getDate() + parseInt(diasCooldown || 0));
 
-        const resultado = await devicesCollection.insertOne(novoDesejo); 
-        console.log("✅ Guardado no MongoDB com sucesso!");
-        
-        res.status(201).json({ 
-          message: 'Desejo inserido com sucesso!', 
-          _id: resultado.insertedId, 
-          ...novoDesejo 
-        });
-      } catch (erro) {
-        console.error('❌ Erro ao inserir no MongoDB:', erro);
-        res.status(500).json({ error: 'Erro ao inserir na base de dados.' });
+        const novoDesejo = {
+          nome, preco, categoria,
+          utilizadorId: req.utilizador.id,
+          dataRegisto: new Date(),
+          dataLiberacao,
+          status: 'em_reflexao'
+        };
+        await devicesCollection.insertOne(novoDesejo);
+        res.status(201).json(novoDesejo);
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao criar desejo.' });
+      }
+    });
+
+    // 3. ROTA POST - Decisão (Conversão para Gasto)
+    app.post('/api/desejos/decidir', verificarToken, async (req, res) => {
+      try {
+        const { desejoId, comprar } = req.body;
+        const status = comprar ? 'comprado' : 'descartado';
+        await devicesCollection.updateOne(
+          { _id: new pkg.ObjectId(desejoId), utilizadorId: req.utilizador.id },
+          { $set: { status } }
+        );
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao processar decisão.' });
+      }
+    });
+
+    // 4. ROTA GET - Listagem de Gastos
+    app.get('/api/gastos', verificarToken, async (req, res) => {
+      try {
+        const gastos = await devicesCollection.find({ 
+          utilizadorId: req.utilizador.id, 
+          status: 'comprado' 
+        }).toArray();
+        res.json(gastos);
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar gastos.' });
       }
     });
 

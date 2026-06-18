@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // <-- IMPORTANTE: Faltava importar isto!
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -10,7 +10,7 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email || !password) return Alert.alert('Aviso', 'Preenche tudo.');
+    if (!email || !password) return Alert.alert('Aviso', 'Preenche todos os campos.');
     setIsLoading(true);
 
     try {
@@ -22,11 +22,8 @@ export default function LoginScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('Sucesso', 'Login feito!');
-        // 1. GRAVAR NO DISCO RÍGIDO (O teu equivalente a $_SESSION['token'] = data.token)
+        // Grava o token para manter a sessão aberta
         await AsyncStorage.setItem('userToken', data.token); 
-        
-        // 2. MUDAR DE PÁGINA
         router.replace('/(tabs)');
       } else {
         Alert.alert('Erro', data.error || 'Credenciais inválidas.');
@@ -38,43 +35,39 @@ export default function LoginScreen() {
     }
   };
 
-  const handleRegisto = async () => {
-    if (!email || !password) return Alert.alert('Aviso', 'Preenche tudo.');
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('https://refleteconsumo-api.onrender.com/api/registo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        Alert.alert('Sucesso', 'Conta criada! Clica em Entrar.');
-        setPassword('');
-      } else {
-        Alert.alert('Erro', data.error || 'Erro ao registar.');
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Falha na rede.');
-    } finally {
-      setIsLoading(false);
-    }
+  // Agora esta função apenas navega para a nova página de registo
+  const handleIrParaRegisto = () => {
+    router.push('/registo'); 
   };
 
   return (
     <View style={style.container}>
       <Text style={style.title}>RefleteConsumo</Text>
       <Text style={style.subtitle}>Identifica-te</Text>
-      <TextInput style={style.input} placeholder="Email" autoCapitalize="none" value={email} onChangeText={setEmail} />
-      <TextInput style={style.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
       
-      {isLoading ? <ActivityIndicator size="large" color="#2ec4b6" /> : (
+      <TextInput 
+        style={style.input} 
+        placeholder="Email" 
+        autoCapitalize="none" 
+        keyboardType="email-address"
+        value={email} 
+        onChangeText={setEmail} 
+      />
+      <TextInput 
+        style={style.input} 
+        placeholder="Password" 
+        secureTextEntry 
+        value={password} 
+        onChangeText={setPassword} 
+      />
+      
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#2ec4b6" />
+      ) : (
         <View style={style.btnContainer}>
           <Button title="Entrar" onPress={handleLogin} color="#2ec4b6" />
-          <View style={{ marginVertical: 5 }} />
-          <Button title="Criar Conta" onPress={handleRegisto} color="#457b9d" />
+          <View style={{ marginVertical: 10 }} />
+          <Button title="Criar Conta" onPress={handleIrParaRegisto} color="#457b9d" />
         </View>
       )}
     </View>
