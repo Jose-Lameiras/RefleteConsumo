@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GastosChart } from '@/components/charts';
 
 type ViewMode = 'resumo' | 'graficos' | 'historico';
+type DateFilterMode = 'todos' | 'hoje' | '7dias' | '30dias' | 'mesAtual';
 
 export default function GastosScreen() {
   const [gastos, setGastos] = useState<any[]>([]);
@@ -13,6 +14,8 @@ export default function GastosScreen() {
   const [isEditingBudget, setIsEditingBudget] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<ViewMode>('resumo');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+  const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilterMode>('todos');
   const [, setTick] = useState<number>(0);
 
   // Força uma atualização leve a cada 30 segundos para manter os cálculos frescos
@@ -83,8 +86,56 @@ export default function GastosScreen() {
     }
   };
 
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  const isWithinDateFilter = (rawDate: string) => {
+    const itemDate = new Date(rawDate);
+    if (Number.isNaN(itemDate.getTime())) return false;
+
+    if (selectedDateFilter === 'todos') return true;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const itemDay = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+
+    if (selectedDateFilter === 'hoje') {
+      return isSameDay(itemDay, today);
+    }
+
+    if (selectedDateFilter === '7dias' || selectedDateFilter === '30dias') {
+      const days = selectedDateFilter === '7dias' ? 7 : 30;
+      const start = new Date(today);
+      start.setDate(start.getDate() - (days - 1));
+      return itemDay >= start && itemDay <= today;
+    }
+
+    if (selectedDateFilter === 'mesAtual') {
+      return itemDay.getFullYear() === today.getFullYear() && itemDay.getMonth() === today.getMonth();
+    }
+
+    return true;
+  };
+
+  const categoriasDisponiveis = Array.from(
+    new Set(
+      gastos
+        .map((item) => (item.categoria || item.category || 'Outros').trim())
+        .filter((cat) => cat.length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  const gastosFiltrados = gastos.filter((item) => {
+    const categoriaItem = item.categoria || item.category || 'Outros';
+    const categoryMatch = selectedCategory === 'Todos' || categoriaItem === selectedCategory;
+    const dateMatch = isWithinDateFilter(item.dataRegisto);
+    return categoryMatch && dateMatch;
+  });
+
   // --- CÁLCULOS DOS GRÁFICOS E ESTATÍSTICAS ---
-  const totalGasto = gastos.reduce((sum, item) => sum + (parseFloat(item.preco) || 0), 0);
+  const totalGasto = gastosFiltrados.reduce((sum, item) => sum + (parseFloat(item.preco) || 0), 0);
   const restante = budget - totalGasto;
   const percentagemUso = budget > 0 ? (totalGasto / budget) * 100 : 0;
   const larguraProgresso = Math.min(100, percentagemUso);
@@ -97,7 +148,7 @@ export default function GastosScreen() {
 
   const obterGastosPorCategoria = () => {
     const categorias: { [key: string]: number } = {};
-    gastos.forEach(item => {
+    gastosFiltrados.forEach(item => {
       const cat = item.categoria || item.category || 'Outros';
       categorias[cat] = (categorias[cat] || 0) + (parseFloat(item.preco) || 0);
     });
@@ -135,7 +186,7 @@ export default function GastosScreen() {
       ultimos7dias[chave] = 0;
     }
 
-    gastos.forEach(item => {
+    gastosFiltrados.forEach(item => {
       const itemData = new Date(item.dataRegisto);
       const chave = itemData.toLocaleDateString('pt-PT', { month: '2-digit', day: '2-digit' });
       if (chave in ultimos7dias) {
@@ -170,7 +221,7 @@ export default function GastosScreen() {
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Visualizações</Text>
           
-          {gastos.length > 0 && (
+            {gastosFiltrados.length > 0 && (
             <>
               <Text style={styles.sectionSubtitle}>Gastos por Categoria</Text>
               <GastosChart
@@ -186,11 +237,11 @@ export default function GastosScreen() {
             </>
           )}
 
-          {gastos.length === 0 && (
+          {gastosFiltrados.length === 0 && (
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>📊</Text>
               <Text style={styles.emptyText}>Sem dados para visualizar</Text>
-              <Text style={styles.emptySubtext}>Faça algumas compras para ver os gráficos</Text>
+              <Text style={styles.emptySubtext}>Ajuste os filtros ou registe novas compras</Text>
             </View>
           )}
 
@@ -204,15 +255,15 @@ export default function GastosScreen() {
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Histórico de Compras</Text>
           
-          {gastos.length > 0 ? (
-            gastos.map((item) => (
+          {gastosFiltrados.length > 0 ? (
+            gastosFiltrados.map((item) => (
               <View key={item._id} style={styles.historyCard}>
                 <View style={styles.historyHeader}>
                   <Text style={styles.historyTitle}>{item.nome}</Text>
                   <Text style={styles.historyPrice}>-{parseFloat(item.preco).toFixed(2)}€</Text>
                 </View>
                 <Text style={styles.historyMeta}>
-                  📂 {item.categoria || 'Geral'} | 📅 {new Date(item.dataRegisto).toLocaleDateString('pt-PT')}
+                  📂 {item.categoria || item.category || 'Geral'} | 📅 {new Date(item.dataRegisto).toLocaleDateString('pt-PT')}
                 </Text>
               </View>
             ))
@@ -325,6 +376,61 @@ export default function GastosScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.filtersContainer}>
+        <Text style={styles.filterTitle}>Filtrar por categoria</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+          <TouchableOpacity
+            style={[styles.filterChip, selectedCategory === 'Todos' && styles.filterChipActive]}
+            onPress={() => setSelectedCategory('Todos')}
+          >
+            <Text style={[styles.filterChipText, selectedCategory === 'Todos' && styles.filterChipTextActive]}>Todos</Text>
+          </TouchableOpacity>
+          {categoriasDisponiveis.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.filterChip, selectedCategory === cat && styles.filterChipActive]}
+              onPress={() => setSelectedCategory(cat)}
+            >
+              <Text style={[styles.filterChipText, selectedCategory === cat && styles.filterChipTextActive]}>{cat}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <Text style={styles.filterTitle}>Filtrar por data</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+          <TouchableOpacity
+            style={[styles.filterChip, selectedDateFilter === 'todos' && styles.filterChipActive]}
+            onPress={() => setSelectedDateFilter('todos')}
+          >
+            <Text style={[styles.filterChipText, selectedDateFilter === 'todos' && styles.filterChipTextActive]}>Todas</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterChip, selectedDateFilter === 'hoje' && styles.filterChipActive]}
+            onPress={() => setSelectedDateFilter('hoje')}
+          >
+            <Text style={[styles.filterChipText, selectedDateFilter === 'hoje' && styles.filterChipTextActive]}>Hoje</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterChip, selectedDateFilter === '7dias' && styles.filterChipActive]}
+            onPress={() => setSelectedDateFilter('7dias')}
+          >
+            <Text style={[styles.filterChipText, selectedDateFilter === '7dias' && styles.filterChipTextActive]}>7 dias</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterChip, selectedDateFilter === '30dias' && styles.filterChipActive]}
+            onPress={() => setSelectedDateFilter('30dias')}
+          >
+            <Text style={[styles.filterChipText, selectedDateFilter === '30dias' && styles.filterChipTextActive]}>30 dias</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterChip, selectedDateFilter === 'mesAtual' && styles.filterChipActive]}
+            onPress={() => setSelectedDateFilter('mesAtual')}
+          >
+            <Text style={[styles.filterChipText, selectedDateFilter === 'mesAtual' && styles.filterChipTextActive]}>Mês atual</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
       {renderContent()}
     </View>
   );
@@ -362,6 +468,43 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
     padding: 20,
+  },
+  filtersContainer: {
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  filterTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 6,
+  },
+  filterScroll: {
+    marginBottom: 10,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    backgroundColor: '#f9fafb',
+    marginRight: 8,
+  },
+  filterChipActive: {
+    backgroundColor: '#2ec4b6',
+    borderColor: '#2ec4b6',
+  },
+  filterChipText: {
+    fontSize: 12,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  filterChipTextActive: {
+    color: '#ffffff',
   },
   title: {
     fontSize: 24,

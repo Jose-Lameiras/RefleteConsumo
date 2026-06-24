@@ -30,7 +30,6 @@ export default function PerfilScreen() {
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const salarioLocal = await AsyncStorage.getItem('userSalary');
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/perfil', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -43,7 +42,7 @@ export default function PerfilScreen() {
         setIsFumador(!!data.isFumador);
         const salarioServidor =
           data.salario !== undefined && data.salario !== null ? String(data.salario) : '';
-        setSalario(salarioServidor || salarioLocal || '');
+        setSalario(salarioServidor);
       }
     } catch (error) {
       Alert.alert("Erro", "Não foi possível carregar os dados do servidor.");
@@ -85,12 +84,6 @@ export default function PerfilScreen() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ nome, email, genero, isFumador, salario: salarioNumerico }),
       });
-
-      if (salarioNumerico !== null) {
-        await AsyncStorage.setItem('userSalary', String(salarioNumerico));
-      } else {
-        await AsyncStorage.removeItem('userSalary');
-      }
 
       if (!response.ok) throw new Error("Erro ao atualizar dados do perfil.");
 

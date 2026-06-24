@@ -205,6 +205,19 @@ router.post('/update-password', verificarToken, async (req, res) => {
 router.get('/desejos', verificarToken, async (req, res) => {
   try {
     const devicesCollection = getCollection('desejos');
+
+    await devicesCollection.updateMany(
+      {
+        utilizadorId: req.utilizador.id,
+        status: 'em_reflexao',
+        jaRefletiu: { $ne: true },
+        dataLiberacao: { $lt: new Date() },
+      },
+      {
+        $set: { status: 'ultrapassado' },
+      }
+    );
+
     const desejos = await devicesCollection.find({ utilizadorId: req.utilizador.id }).toArray();
     res.json(desejos);
   } catch (error) {
@@ -215,8 +228,19 @@ router.get('/desejos', verificarToken, async (req, res) => {
 // 2. ROTA POST - Inserção de Desejo (Alta precisão com data e hora do seletor de rodas)
 router.post('/desejos', verificarToken, async (req, res) => {
   try {
-    const { nome, preco, category, categoria, diasCooldown, dataLiberacao: dataEnviada } = req.body;
+    const {
+      nome,
+      preco,
+      category,
+      categoria,
+      estadoEspirito,
+      estadoDeEspirito,
+      mood,
+      diasCooldown,
+      dataLiberacao: dataEnviada,
+    } = req.body;
     const categoriaNormalizada = category || categoria;
+    const estadoEspiritoNormalizado = estadoEspirito || estadoDeEspirito || mood || null;
     
     let dataLiberacao = dataEnviada ? new Date(dataEnviada) : new Date();
     if (!dataEnviada) {
@@ -228,6 +252,7 @@ router.post('/desejos', verificarToken, async (req, res) => {
       nome, 
       preco, 
       categoria: categoriaNormalizada,
+      estadoEspirito: estadoEspiritoNormalizado,
       utilizadorId: req.utilizador.id,
       dataRegisto: new Date(),
       dataLiberacao,

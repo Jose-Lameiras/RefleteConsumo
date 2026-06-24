@@ -11,6 +11,13 @@ export default function TabTwoScreen() {
   const HORAS_TRABALHO_DIA = 8;
   const DIAS_TRABALHO_MES = 22;
 
+  const buildMoodKey = (nome: string, precoValor: number, categoriaValor: string, dataLiberacaoISO: string) => {
+    const nomeKey = (nome || '').trim().toLowerCase();
+    const precoKey = Number.isFinite(precoValor) ? precoValor.toFixed(2) : '0.00';
+    const categoriaKey = (categoriaValor || '').trim().toLowerCase();
+    return `${nomeKey}|${precoKey}|${categoriaKey}|${dataLiberacaoISO}`;
+  };
+
   // Ativa uma atualização a cada 1 segundo para manter a contagem decrescente viva
   useEffect(() => {
     const interval = setInterval(() => {
@@ -35,8 +42,29 @@ export default function TabTwoScreen() {
       if (!desejosResponse.ok) throw new Error('Erro na API');
 
       const data = await desejosResponse.json();
-      // Hide items already bought because they are shown in Gastos screen.
-      setDesejos((Array.isArray(data) ? data : []).filter((item) => item.status !== 'comprado'));
+      const rawMoodMap = await AsyncStorage.getItem('desireMoodMap');
+      const moodMap = rawMoodMap ? JSON.parse(rawMoodMap) : {};
+
+      // Keep only active wishes in this screen. Bought goes to Gastos and canceled is removed.
+      const desejosAtivos = (Array.isArray(data) ? data : []).filter(
+        (item) => item.status !== 'comprado' && item.status !== 'descartado'
+      );
+
+      const desejosComMoodFallback = desejosAtivos.map((item) => {
+        const categoriaItem = item.categoria || item.category || '';
+        const precoItem = parseFloat(String(item.preco).replace(',', '.')) || 0;
+        const dataLiberacaoISO = item.dataLiberacao ? new Date(item.dataLiberacao).toISOString() : '';
+        const moodKey = buildMoodKey(item.nome || '', precoItem, categoriaItem, dataLiberacaoISO);
+        const moodFallback = moodMap[moodKey];
+
+        if (item.estadoEspirito || item.estadoDeEspirito || item.mood || !moodFallback) {
+          return item;
+        }
+
+        return { ...item, estadoEspirito: moodFallback };
+      });
+
+      setDesejos(desejosComMoodFallback);
 
       if (perfilResponse.ok) {
         const perfilData = await perfilResponse.json();
@@ -44,14 +72,10 @@ export default function TabTwoScreen() {
         if (!isNaN(salario) && salario > 0) {
           setSalarioMensal(salario);
         } else {
-          const salarioLocal = await AsyncStorage.getItem('userSalary');
-          const salarioLocalNum = parseFloat(salarioLocal || '');
-          setSalarioMensal(!isNaN(salarioLocalNum) && salarioLocalNum > 0 ? salarioLocalNum : null);
+          setSalarioMensal(null);
         }
       } else {
-        const salarioLocal = await AsyncStorage.getItem('userSalary');
-        const salarioLocalNum = parseFloat(salarioLocal || '');
-        setSalarioMensal(!isNaN(salarioLocalNum) && salarioLocalNum > 0 ? salarioLocalNum : null);
+        setSalarioMensal(null);
       }
     } catch (error) {
       console.log("Erro na busca:", error);
@@ -133,6 +157,11 @@ export default function TabTwoScreen() {
       }
 
       if (response.ok) {
+        if (!comprar) {
+          // Remove canceled wish immediately from UI.
+          setDesejos((prev) => prev.filter((item) => item._id !== desejoId));
+        }
+
         Alert.alert(
           'Sucesso!', 
           comprar ? 'Item comprado e enviado para os gastos! 💰' : 'Guardado como Desejo não comprado! ❌'
@@ -208,6 +237,7 @@ export default function TabTwoScreen() {
             const jaTerminou = new Date(item.dataLiberacao).getTime() - new Date().getTime() <= 0;
             const jaRefletiu = !!item.jaRefletiu;
             const categoria = item.categoria || item.category || 'Outros';
+            const estadoEspirito = item.estadoEspirito || item.estadoDeEspirito || item.mood || 'Não definido';
             const precoItem = parseFloat(String(item.preco).replace(',', '.')) || 0;
             const horasNecessarias = calcularHorasParaCompra(precoItem);
 
@@ -216,6 +246,7 @@ export default function TabTwoScreen() {
                 <Text style={styles.cardTitle}>{item.nome}</Text>
                 <Text style={styles.cardInfo}>💰 {item.preco}€</Text>
                 <Text style={styles.cardInfo}>📂 Categoria: {categoria}</Text>
+                <Text style={styles.cardInfo}>🙂 Estado: {estadoEspirito}</Text>
                 {horasNecessarias !== null ? (
                   <Text style={styles.workHoursText}>
                     🕒 Precisa de {horasNecessarias.toFixed(1)}h de trabalho para comprar
@@ -227,7 +258,7 @@ export default function TabTwoScreen() {
                 )}
                 
                 <Text style={{ marginTop: 5, color: '#666', fontWeight: '500' }}>
-                  Status: {item.status === 'em_reflexao' ? 'Em reflexão' : item.status}
+                  Status: {item.status === 'em_reflexao' ? 'Em reflexão' : item.status === 'ultrapassado' ? 'Ultrapassado' : item.status}
                 </Text>
 
                 {item.status === 'em_reflexao' && item.dataLiberacao && (

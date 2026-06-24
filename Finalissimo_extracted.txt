@@ -1,0 +1,1863 @@
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+RefleteConsumo 
+Soluções digitais para a redução do consumo impulsivo 
+ 
+ 
+ 
+Diogo de Oliveira Inácio, 20220421 
+José João Figueiredo Lameiras, 20220440 
+ 
+ 
+Orientadores 
+Arminda da Conceição dos Santos Guerra e Lopes 
+ 
+ 
+ 
+ 
+ 
+ 
+Trabalho de Projeto apresentado à Escola Superior de Tecnologia do Instituto Politécnico de Castelo 
+Branco para cumprimento dos requisitos necessários à obtenção do grau de Licenciado em  
+Engenharia Informática, realizado sob a orientação científica da Doutora Arminda Guerra, do 
+Instituto Politécnico de Castelo Branco. 
+ 
+ 
+ 
+Janeiro 2026 
+ 
+
+
+2 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+3 
+Composição do júri 
+ 
+Presidente do júri 
+Grau académico, nome do presidente do júri” 
+ 
+Vogais 
+Doutora, Arminda da Conceição dos Santos Guerra e Lopes 
+Professora Coordenadora, Escola Superior de Tecnologia de Castelo Branco 
+ 
+Doutor, Pedro Nuno Moreira da Silva 
+Professor Adjunto, Escola Superior de Tecnologia de Castelo Branco 
+ 
+Doutor, Carlos Manuel de Oliveira Alves 
+Professor Adjunto, Escola Superior de Tecnologia de Castelo Branco 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+4 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+5 
+Agradecimentos 
+ 
+Gostaríamos de expressar a nossa mais sincera gratidão a todas as pessoas 
+que tornaram possível a realização deste projeto.  
+Agradecemos à nossa orientadora e professores, cujo conhecimento, paciência 
+e orientação foram essenciais ao longo de todas as etapas deste trabalho. 
+ À Escola Superior de Tecnologia, pelos recursos disponibilizados que 
+proporcionaram um ambiente de estudo e investigação adequado. Aos nossos 
+colegas de curso que nos ajudaram com opiniões, pela colaboração e partilha de 
+conhecimentos, que enriqueceram as discussões e ideias que surgiram ao longo 
+deste projeto. 
+A todos, o nosso sincero obrigado. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+6 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+7 
+Resumo 
+ 
+O presente trabalho tem como objetivo a conceção de uma proposta conceptual 
+de uma aplicação móvel, denominada RefleteConsumo, orientada para a promoção 
+do consumo consciente e para a prevenção de comportamentos de compra 
+impulsiva. O fenómeno do consumism o e das compras impulsivas tem vindo a 
+intensificar-se com o crescimento do comércio eletrónico e das plataformas digitais, 
+sendo influenciado por fatores psicológicos, sociais, digitais e económicos, com 
+impactos significativos no bem-estar financeiro e emocional dos consumidores. 
+Numa primeira fase, é realizado um enquadramento teórico do fenómeno das 
+compras impulsivas, abordando as suas causas, motivações e consequências, com 
+base na literatura científica. Seguidamente, é apresentado o estado da arte, através 
+da análise crítica de aplicações móveis de gestão financeira pessoal e de 
+sobriedade, permitindo identificar limitações nas soluções existentes, 
+nomeadamente a escassa intervenção no momento pré-compra. 
+Com base nas lacunas identificadas, é propost a a aplicação RefleteConsumo, 
+que adota uma abordagem educativa, reflexiva e não punitiva, centrada na 
+distinção entre desejo de compra e gasto efetivo. A aplicação integra 
+funcionalidades como o registo de desejos de compra, compras pendentes, 
+visualização de gastos reais, um quiz facultativo de autorreflexão, dicas diárias e 
+um módulo específico para utilizadores fumadores . O desenvolvimento de 
+storyboards e protótipos de baixa fidelidade permitiu validar a estrutura de 
+navegação e os fluxos de interação da aplicação. 
+Conclui-se que a aplicação proposta apresenta potencial para apoiar a 
+autorreflexão e a tomada de decisões de consumo mais conscientes, 
+demonstrando o papel das tecnologias móveis como ferramentas de apoio à 
+mudança comportamental. 
+ 
+ 
+Palavras chave 
+ 
+Consumismo; Compras impulsivas; Consumo consciente; Aplicações móveis; 
+Mudança comportamental. 
+ 
+ 
+ 
+ 
+ 
+ 
+
+8 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+9 
+Abstract 
+ 
+This project aims to design a conceptual proposal for a mobile application, called 
+RefleteConsumo, focused on promoting conscious consumption and preventing 
+impulsive buying behaviors. Consumerism and impulse purchases have intensified 
+in recent years due to the expansion of e -commerce and digital platforms, being 
+influenced by psychological, social, digital, a nd economic factors, with significant 
+impacts on consumers financial and emotional well-being. 
+Initially, a theoretical framework of impulsive buying is presented, addressing its 
+causes, motivations, and consequences based on scientific literature. 
+Subsequently, a state -of-the-art analysis is conducted, reviewing mobile 
+applications related to personal financial management and sobriety, allowing the 
+identification of limitations in existing solutions, particularly the lack of intervention 
+at the pre-purchase decision moment. 
+Based on the identified gaps, the RefleteConsumo application is proposed, 
+adopting an educational, reflective, and non -punitive approach, centered on the 
+distinction between purchase desire and actual expenditure. The application 
+includes features such as purchase desire registration, pending purchases, 
+visualization of real expenses, an optional self -reflection quiz, daily tips, and a 
+specific module for smokers . Low-fidelity storyboards and prototypes were 
+developed to validate navigation structure and interaction flows. 
+The proposed solution demonstrates the potential of mobile technologies to 
+support self-reflection and conscious consumption decisions, highlighting their role 
+in behavioral change support. 
+ 
+ 
+Keywords 
+ 
+Consumerism; Impulsive buying; Conscious consumption; Mobile applications; 
+Behavioral change. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+10 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+11 
+Índice geral 
+ 
+1. Introdução ..................................................................................................... 1 
+1.1 Âmbito...................................................................................................... 1 
+1.2 Definição do Problema............................................................................. 1 
+1.3 Objetivos .................................................................................................. 2 
+1.4 Organização do Documento .................................................................... 2 
+2. Consumismo e Compras Impulsivas ............................................................. 4 
+2.1 Compras Impulsivas ................................................................................ 4 
+2.2 Causas e motivos .................................................................................... 5 
+2.3 Consequências do Consumismo e das Compras Impulsivas .................. 7 
+3. Estado da Arte: Aplicações Móveis Relacionadas com Gestão Financeira e 
+Comportamento de Consumo ................................................................................ 9 
+3.1 Introdução ................................................................................................ 9 
+3.2 Aplicações móveis de gestão financeira pessoal e controlo de gastos ... 9 
+3.3 Aplicações móveis de Sobriedade ......................................................... 15 
+3.3 Revisões académicas e estudos sobre aplicações de gestão financeira21 
+3.4 Análise crítica e identificação de lacunas .............................................. 22 
+3.5 Conclusões do Estado da Arte .............................................................. 23 
+4. Descrição da Aplicação RefleteConsumo ................................................... 24 
+4.1 Painel Principal – Registo de Desejos de Compra ................................ 24 
+4.2 Compras Pendentes .............................................................................. 24 
+4.3 Área de Gastos ...................................................................................... 25 
+4.4 Smoke Tracker ...................................................................................... 25 
+4.5 Ideia Diária ............................................................................................. 26 
+4.6 Gestão do Perfil do Utilizador ................................................................ 26 
+4.7 Contributo da Aplicação para a Mudança de Comportamentos ............. 26 
+4.8 Mapa Mental .......................................................................................... 27 
+5. Storyboards da Aplicação............................................................................ 28 
+6. Conclusões e Trabalho Futuro .................................................................... 38 
+Referências ..................................................................................................... 40 
+ 
+ 
+
+12 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+13 
+Índice de figuras 
+ 
+Figura 1 - Toshl Finance | Categoria de Despesas. ........................................................ 10 
+Figura 2 - Toshl Finance | Monitorização de Orçamento. ............................................ 10 
+Figura 3 - Boonzi | Categoria de Operações. ...................................................................... 11 
+Figura 4 - Boonzi | Monitorização de Despesas. ............................................................... 11 
+Figura 5 - Monefy | Monitorização de Orçamento. ........................................................... 12 
+Figura 6 - Monefy | Menu de Funcionalidades. .................................................................. 12 
+Figura 7 - Stop Impulsive Buying | Questionário de Necessidades. ...................... 13 
+Figura 8 - Stop Impulsive Buying | Desafio Economico. ............................................... 13 
+Figura 9 - Impause | Monitorização de Orçamento Mensal. ....................................... 14 
+Figura 10 - Impause | Menu de Despesas. ........................................................................... 14 
+Figura 11 -  QuitNow | Página de Progresso. ...................................................................... 16 
+Figura 12 - QuitNow | Página de Sincronização com Relógio. ................................. 16 
+Figura 13 - Smoke Free | Página de Motivação. ............................................................... 17 
+Figura 14 – Smoke Free | Página de Objetivos. ................................................................ 17 
+Figura 15 - Drink Control | Monitorização de Progresso. ............................................. 18 
+Figura 16 - Drink Control | Adicionar Bebida. ...................................................................... 18 
+Figura 17 - Sober Time | Ecrã Principal. ................................................................................ 19 
+Figura 18 - Sober Time | Monitorização de Poupança. ................................................. 19 
+Figura 19 - I Am Sober | Página Motivacional. ................................................................... 20 
+Figura 20 - I Am Sober | Monitorização de Progresso. .................................................. 20 
+Figura 21 - Mapa Mental. ................................................................................................................ 27 
+Figura 22 - Wireframe Inicial. ........................................................................................................ 28 
+Figura 23 - Wireframe Login. ........................................................................................................ 29 
+Figura 24 – Wireframe Criar Conta. .......................................................................................... 30 
+Figura 25 - Wireframe Criar Perfil. ............................................................................................. 30 
+Figura 26 - Wireframe Inicial do Quiz. ..................................................................................... 31 
+Figura 27 - Wireframe da pergunta 1 do Quiz. ................................................................... 31 
+Figura 28 - Wireframe da pergunta 10 do Quiz. ................................................................ 31 
+Figura 29 - Wireframe do resultado do Quiz. ...................................................................... 31 
+Figura 30 - Wireframe do Pagina Inicial "Utilizador não Fumante". ....................... 32 
+Figura 31 - Wireframe do formulário "Utilizador Fumante".......................................... 32 
+Figura 32 - Wireframe "Compras Pendentes". ................................................................... 33 
+Figura 33 - Wireframe "Gastos". ................................................................................................. 34 
+Figura 34 - Wireframe da "Dica do Dia". ................................................................................ 34 
+Figura 35 - Wireframe "Dicas Guardadas". .......................................................................... 35 
+Figura 36 - Wireframe de perfil. ................................................................................................... 36 
+Figura 37 - Wireframe de Controlo de Tabaco. .................................................................. 36 
+Figura 38 - Wireframe de Estatísticas do Controlo de Tabaco. ................................ 37 
+ 
+ 
+
+14 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+15 
+Lista de tabelas 
+ 
+Tabela 1 - Comparação de aplicações de gestão financeira. .................................... 15 
+Tabela 2 - Comparação de Aplicações de Sobriedade. ................................................ 21 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+16 
+ 
+  
+
+17 
+Lista de abreviaturas, siglas e acrónimos 
+ 
+UML – Unified Modeling Language 
+ 
+ 
+ 
+  
+
+18 
+ 
+ 
+ 
+ 
+ 
+ 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+1 
+1. Introdução 
+1.1 Âmbito 
+O presente trabalho aborda o estudo do comportamento do consumidor, 
+recaindo especificamente sobre o fenómeno do consumismo e das compras 
+impulsivas. Nas últimas décadas, o aumento da disponibilidade de bens, aliado à 
+expansão do comércio eletrónico e das plataformas digitais, tem intensificado 
+práticas de consumo caracterizadas por decisões rápidas, pouco refletidas e 
+frequentemente desligadas de necessidades reais. Este contexto tem d espertado 
+crescente interesse académico, sobretudo devido às consequências económicas, 
+psicológicas e sociais associadas a padrões de consumo excessivo. 
+As compras impulsivas constituem uma manifestação relevante deste 
+fenómeno, sendo frequentemente associ adas a processos emocionais intensos e 
+a uma redução temporária do controlo cognitivo. A literatura científica tem 
+demonstrado que estes comportamentos são potenciados por fatores individuais e 
+contextuais, incluindo estados emocionais, estratégias de mark eting persuasivo e 
+características específicas dos ambientes digitais de compra. Assim, torna -se 
+pertinente analisar de que forma soluções tecnológicas, nomeadamente aplicações 
+móveis, podem contribuir para a prevenção ou mitigação de comportamentos de 
+consumo impulsivo. 
+ 
+1.2 Definição do Problema 
+A compra impulsiva caracteriza-se por uma decisão de aquisição não planeada, 
+desencadeada por um impulso súbito e frequentemente acompanhada por elevada 
+ativação emocional. Este tipo de comportamento distingue-se do consumo racional 
+e deliberado, uma vez que ocorre sem avaliação aprofundada das consequências 
+financeiras ou utilitárias da compra. Estudos na área da psicologia do consumidor 
+indicam que as compras impulsivas resultam da interação entre fatores interno s, 
+como emoções e traços de personalidade, e fatores externos, como estímulos do 
+ambiente de compra. 
+No contexto digital, este problema assume particular relevância. A facilidade de 
+acesso a plataformas de comércio eletrónico, a personalização de anúncios,  as 
+promoções de duração limitada e os mecanismos de recompensa imediata 
+contribuem para um ambiente propício à tomada de decisões impulsivas. Estes 
+comportamentos são especialmente prevalentes entre consumidores jovens e 
+utilizadores frequentes de tecnologias digitais, aumentando o risco de dificuldades 
+financeiras, arrependimento pós -compra e impactos negativos no bem -estar 
+psicológico. 
+ 
+
+Diogo Inácio, José Lameiras 
+2 
+1.3 Objetivos 
+O objetivo geral deste trabalho consiste em conceber uma proposta conceptual 
+de uma aplicação móvel orientada para a prevenção e redução de comportamentos 
+de consumo impulsivo, com base em evidência científica. 
+De forma a concretizar este objetivo geral, definem -se os seguintes objetivos 
+específicos: 
+ Analisar o fenómeno do consumismo e das compras impulsivas à luz da 
+literatura científica; 
+ Identificar causas, consequências e perfis de consumidores mais suscetíveis 
+ao comportamento impulsivo; 
+ Analisar criticamente soluções tecnológicas existentes relacionadas com 
+gestão financeira e autocontrolo do consumo; 
+ Identificar lacunas nas soluções atuais e oportunidades de inovação; 
+ Definir requisitos funcionais e não funcionais para uma aplicação móvel de 
+prevenção do consumismo; 
+ Propor uma arquitetura geral e modelos UML para a solução. 
+ 
+1.4 Organização do Documento 
+O presente relatório encontra -se organizado em vários capítulos, de forma a 
+permitir uma compreensão progressiva do problema em estudo, da solução 
+proposta e do processo de desenvolvimento do projeto. 
+No Capítulo 1 é apresentado o enquadramento geral do trabalho, introduzindo 
+o tema do consumismo e das compras impulsivas, bem como os objetivos e a 
+motivação do projeto. 
+O Capítulo 2  aborda o enquadramento teórico do fenómeno das compras 
+impulsivas, explorando as suas causas, motivações e consequências, com base na 
+literatura científica existente. 
+No Capítulo 3 é apresentado o estado da arte, através da análise de aplicações 
+móveis relacionadas com a gestão financeira e a sobriedade, permitindo identificar 
+lacunas e oportunidades para a solução proposta. 
+O Capítulo 4  descreve a aplicação RefleteConsumo, detalhando as suas 
+funcionalidades, perfis de utilizador e lógica de funcionamento, incluindo o mapa 
+mental da aplicação. 
+O Capítulo 5  apresenta os storyboards e os protótipos de baixa fidelidade, 
+descrevendo a estrutura de navegação e os fluxos de interação da aplicação. 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+3 
+Por fim, o Capítulo 6  apresenta a conclusão do trabalho e as perspetivas de 
+trabalho futuro, sintetizando os principais contributos do projeto e possíveis 
+evoluções da solução proposta. 
+  
+
+Diogo Inácio, José Lameiras 
+4 
+2. Consumismo e Compras Impulsivas 
+2.1 Compras Impulsivas 
+Primeiramente, é necessário entender o conceito de consumismo bem como o 
+de compras impulsivas, comparando com a definição de compras compulsivas. 
+Deste modo comecemos por referir o conceito de consumis mo, o consumismo 
+constitui “uma ideologia ativa na qual o significado da vida pode ser encontrado na 
+compra de coisas e experiências pré -embaladas que se disseminam pelo 
+capitalismo moderno”. Nesta perspetiva, o consumo ultrapassa a mera satisfação 
+de necessidades básicas, assumindo -se como um fenómeno social estruturante, 
+através do qual os indivíduos adquirem bens ou serviços com o objetivo de 
+satisfazer necessidades materiais, simbólicas e identitárias. Os comportamentos 
+de consumo podem, assim, ser influenciados tanto pelo desejo de integração num 
+determinado grupo social como pela necessidade de diferenciação face aos outros 
+[1]. 
+O consumo pode ser conceptualizado em cinco categorias distintas: o consumo 
+conspícuo, orientado para a ostentação de riqueza ; o consumo simbólico, em que 
+os bens são valorizados sobretudo pelo seu significado social; o consumo viciante, 
+caracterizado por uma dependência psicológica em relação aos bens; o consumo 
+compulsivo, marcado pela aquisição excessiva e repetitiva de produ tos; e o 
+consumo sagrado, no qual o consumidor estabelece uma relação de apreço e 
+respeito pelo objeto adquirido. Paralelamente, as práticas de consumo podem ser 
+orientadas para a tarefa, quando o indivíduo adquire um bem por necessidade 
+funcional, ou orie ntadas para a experiência, quando o ato de compra é motivado 
+pela procura de prazer e entretenimento. Importa salientar que estas orientações 
+não são mutuamente exclusivas, podendo a compra orientada para a tarefa evoluir 
+para uma experiência hedónica, cul minando na aquisição de produtos 
+desnecessários [1]. 
+Passando agora para o conceito de compra impulsiva, Rook afirma que esta é 
+amplamente descrita na literatura como um comportamento de consumo 
+caracterizado por decisões súbitas, não planeadas e fortemente influenciadas por 
+estímulos emocionais. Este tipo de compra ocorre quando o consumidor 
+experiência um impulso inte nso para adquirir um produto ou serviço de forma 
+imediata, frequentemente sem uma avaliação ponderada das necessidades reais 
+ou das consequências futuras. A impulsividade no consumo distingue-se, assim, do 
+comportamento de compra planeada, o qual envolve p rocessos cognitivos mais 
+deliberativos, racionais e orientados para objetivos previamente definidos [2]. 
+No entanto, importa distinguir a compra impulsiva da compra compulsiva. 
+Enquanto a compra impulsiva pode ocorrer de forma ocasional, situacional e não 
+necessariamente patológica, a compra compulsiva corresponde a um padrão 
+repetitivo e persistente de consumo excessivo, caracterizado pela perda de controlo 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+5 
+sobre o ato de comprar e pela continuidade do comportamento apesar das 
+consequências negativas assoc iadas. A evidência empírica recente indica que a 
+compra compulsiva afeta entre 1,8% e 12,4% da população geral, apresentando 
+maior prevalência em mulheres jovens, particularmente entre os 18 e os 30 anos, 
+e estando associada a sofrimento psicológico signif icativo, prejuízo no 
+funcionamento social e dificuldades financeiras. Estes dados reforçam a 
+necessidade de uma distinção clara entre comportamentos impulsivos normativos 
+e a compra compulsiva enquanto fenómeno comportamental desregulado com 
+relevância clínica e preventiva. 
+ 
+2.2 Causas e motivos  
+O comportamento de compra impulsiva resulta de um fenómeno complexo e 
+multifatorial, não podendo ser explicado por um único determinante isolado. A 
+literatura científica aponta para a interação entre diferentes dimensões 
+psicológicas, sociais, digitais e económicas que, em conjunto, influenciam a forma 
+como os consumidores percecionam, avaliam e concretizam decisões de compra. 
+Seguidamente, são apresentados os principais fatores identificados pela 
+investigação ci entífica como determinantes na intensificação do consumo 
+impulsivo. 
+ 
+2.2.1 Fatores Psicológicos 
+Os fatores psicológicos assumem um papel central na explicação do 
+comportamento de compra impulsiva. Trata -se de um fenómeno complexo, 
+associado à predominância  de processos emocionais sobre o controlo cognitivo. 
+Segundo Rodrigues, Lopes e Varela, a compra impulsiva caracteriza -se por um 
+desejo súbito e intenso de comprar, acompanhado por uma diminuição do controlo 
+racional e pela procura de gratificação imediata. 
+Este tipo de comportamento funciona frequentemente como um mecanismo de 
+regulação emocional, sendo utilizado para aliviar estados afetivos negativos, como 
+ansiedade, stress ou humor deprimido. Adicionalmente, características individuais 
+como baixa autoestima, elevada impulsividade enquanto traço de personalidade e 
+maior vulnerabilidade emocional aumentam significativamente a propensão para a 
+adoção deste padrão de consumo. Estímulos externos, como o ambiente de loja e 
+campanhas promocionais emocionalmente  apelativas, contribuem ainda para a 
+ativação do impulso de compra [3]. 
+ 
+ 
+ 
+
+Diogo Inácio, José Lameiras 
+6 
+2.2.2 Fatores Sociais 
+Os fatores sociais desempenham um papel determinante no comportamento de 
+compra impulsiva, sobretudo em ambientes digitais socialmente integrados. De 
+acordo co m Reddy, as plataformas de social commerce potenciam decisões de 
+compra não planeadas através de mecanismos de interação social, como 
+comentários, recomendações, likes e conteúdos gerados pelos utilizadores. 
+Estas funcionalidades intensificam a influência dos pares e a validação social, 
+aumentando a confiança, o envolvimento emocional e o prazer percebido durante 
+a experiência de compra, enquanto reduzem o controlo cognitivo do consumidor. 
+Em mercados emergentes, onde as normas de consumo digital ainda se encontram 
+em consolidação, a pressão social e os sinais de aprovação coletiva revelam -se 
+particularmente eficazes na promoção de compras impulsivas [4].  
+ 
+2.2.3 Fatores Digitais 
+Os fatores digitais assumem igualmente um papel central na intensificação das 
+compras impulsivas. A arquitetura das plataformas digitais, caracterizada pela 
+personalização algorítmica, recomendações automáticas, notificações em tempo 
+real e estímulos visuais constantes, favorece a reduç ão do controlo cognitivo e o 
+aumento da resposta emocional do consumidor. 
+A facilidade do processo de compra, através de pagamentos simplificados e 
+funcionalidades como one-click purchase, diminui o tempo de reflexão e reforça a 
+gratificação instantânea. A exposição contínua a estímulos digitais contribui ainda 
+para a normalização do consumo impulsivo, tornando -o um comportamento 
+recorrente no quotidiano digital [5]. 
+ 
+2.3.4 Fatores Económicos 
+Por fim, os fatores económicos influenciam significativamente o comportamento 
+de compra impulsiva. A perceção de benefícios económicos, como promoções, 
+descontos e ofertas, pode desencadear respostas emocionais de prazer e 
+recompensa, incentivando decisões de compra não planeadas. 
+Em contextos de crise económica, a pres são sobre o orçamento e o aumento 
+da sensibilidade ao preço alteram as dinâmicas de consumo, mas não eliminam o 
+comportamento impulsivo, especialmente no caso de bens considerados 
+essenciais. Estudos indicam ainda que a disponibilidade financeira individua l está 
+associada a uma maior probabilidade de compras por impulso, sobretudo em 
+consumidores mais jovens, embora este efeito seja mediado por variáveis 
+psicológicas, como a autoestima [6], [7].  
+ 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+7 
+2.3 Consequências do Consumismo e das Compras Impulsivas  
+O comportamento de compra impulsiva — caracterizado pela aquisição rápida 
+e não planeada de bens ou serviços — não é apenas um fenómeno momentâneo, 
+mas pode ter impactos significativos a vários níveis: emocional, financeiro e 
+comportamental. 
+ 
+2.3.1 Consequências emocionais 
+As compras impulsivas podem gerar tanto emoções positivas imediatas, como 
+excitação, alegria e satisfação momentânea, quanto respostas negativas 
+posteriores, tais como arrependimento, culpa ou frustração. Embora os 
+consumidores pos sam inicialmente sentir prazer com a compra, esta sensação 
+tende a ser curta e pode ser seguida por sentimentos de tensão emocional ou culpa 
+ao confrontar -se com o gasto efetuado ou com a necessidade de justificar a 
+compra.  
+Além disso, em alguns estudos s ociais, observou -se que indivíduos com 
+tendência a compras impulsivas apresentam níveis mais elevados de ansiedade, 
+humor negativo e até traços de personalidade que dificultam a autorregulação 
+emocional, o que pode agravar o impacto emocional do comportame nto impulsivo 
+ao longo do tempo [8]. 
+ 
+2.3.2 Consequências financeiras 
+Uma das consequências mais documentadas do consumismo impulsivo 
+relaciona-se com o impacto financeiro direto. Compras não planeadas podem 
+contribuir para gastos excessivos, desequilíbrio  no orçamento pessoal e eventual 
+endividamento. Estudos indicam que indivíduos que compram impulsivamente 
+podem apresentar aumento no uso de crédito, dificuldades em controlar despesas 
+e maior probabilidade de acumular dívidas de cartão de crédito ou empré stimos 
+pessoais, sobretudo quando a frequência de compras não está alinhada com a 
+renda disponível. 
+O endividamento resultante também pode ter efeitos secundários no bem-estar 
+financeiro e psicológico, visto que a pressão por saldar dívidas pode aumentar o  
+stress financeiro e reduzir a sensação de segurança económica de longo prazo [9].  
+ 
+2.3.3 Consequências comportamentais e cognitivas 
+O consumismo impulsivo pode ainda desencadear um ciclo de comportamento 
+onde o consumidor procura repetidamente compras como mecanismo de regulação 
+
+Diogo Inácio, José Lameiras 
+8 
+emocional, reforçando um padrão de resposta a estímulos de gratificação imediata, 
+o que pode, em casos extremos, alinhar -se com comportamentos de compra 
+compulsiva ou desregulação do autocontrolo [10].  
+Estudos também mostraram qu e compras impulsivas podem aumentar a 
+probabilidade de devoluções de produtos, uma vez que decisões imediatas e pouco 
+ponderadas nem sempre satisfazem as expectativas do consumidor após reflexão 
+mais cuidadosa [11].  
+ 
+ 
+  
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+9 
+3. Estado da Arte: Aplicações Móveis Relacionadas com 
+Gestão Financeira e Comportamento de Consumo 
+3.1 Introdução 
+O Capítulo 3 apresenta o estado da arte, no qual são analisadas e comparadas 
+aplicações móveis relacionadas com a gestão de comportamentos de consumo. 
+Esta análise incide tanto sobre aplicações de gestão financeira pessoal e controlo 
+de gastos, como sobre aplicações destinadas à prevenção de comportamentos 
+prejudiciais à saúde, nomeadamente o consumo excessivo de álcool, drogas e 
+outros hábitos de risco. O objetivo é compreender de que forma diferentes soluções 
+tecnológicas promovem o autocontrolo e a mudança comportamental, identificando 
+funcionalidades e abordagens relevantes para o desenvolvimento da aplicação 
+proposta. 
+Para este efeito, foram consultadas fontes especializadas, análises de mercado 
+e revisões académicas de aplicações móveis, considerando ferramentas de 
+controlo financeiro e aplicações de saúde móvel ( mHealth). A análise inclui 
+funcionalidades como definição de metas, monitorização, alertas, feedback e 
+conteúdos educativos, permitindo comparar estratégias de intervenção utilizadas 
+em diferentes contextos e identificar lacunas e oportunidades de inovação no apoio 
+à gestão do consumo consciente [12], [13].  
+ 
+3.2 Aplicações móveis de gestão financeira pessoal e c ontrolo de 
+gastos 
+Diversas aplicações focam -se na categorização de despesas, definição de 
+orçamentos e visualização de padrões de consumo, oferecendo mecanismos que 
+promovem uma maior consciência financeira por parte dos utilizadores. Estas 
+funcionalidades, tais como a classificação automática de despesas, a visão geral 
+do orçamento e os alertas de limite, são fundamentais para auxiliar no controlo 
+financeiro pessoal. No entanto, é importante sublinhar que, embora úteis no 
+combate ao consumismo descuidado, estas aplicações tendem a centrar -se 
+sobretudo na análise e gestão pós -despesa e no planeamento financeiro, não 
+estando, em geral, desenhadas para lidar diretamente com o autocontrolo 
+psicológico no momento de uma compra impulsiva. Com base nestes critério s, 
+segue-se uma análise detalhada de algumas das aplicações mais utilizadas e 
+recomendadas em fontes especializadas [14], [15]. 
+ 
+ 
+ 
+ 
+
+Diogo Inácio, José Lameiras 
+10 
+3.2.1 Toshl Finance 
+A aplicação Toshl Finance é uma ferramenta de gestão financeira pessoal que 
+permite aos utilizadores acompanhar despesas, receitas e orçamentos num único 
+espaço, com suporte a várias contas bancárias, cartões e moedas diferentes. 
+Permite categorizar automaticamente gastos, visualizar gráficos do fluxo financeiro 
+mensal e definir limites de orçamento por categoria, ajudando a aumentar a 
+consciência sobre padrões de consumo e a manter os gastos sob controlo. A 
+aplicação é reconhecida pela sua interface intuitiva e pela facilidade de introdução 
+de dados, incluindo importação automática de contas bancárias no plano premium, 
+bem como pela sincronização entre dispositivos [16], [17].  
+ 
+ 
+Figura 1 - Toshl Finance  | Categoria de 
+Despesas. 
+ 
+Figura 2 - Toshl Finance  | Monitorização de 
+Orçamento. 
+ 
+3.2.2 Boonzi 
+A aplicação Boonzi é um software de gestão de finanças pessoais desenvolvido 
+em Portugal que ajuda os utilizadores a manter o orçamento familiar sob controlo 
+ao cêntimo, permitindo registar e categorizar despesas, importar extratos bancários 
+e analisar padrões de consumo através de relat órios e gráficos. Boonzi facilita a 
+visualização de hábitos de gasto, a definição de orçamentos mensais e a 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+11 
+planificação financeira futura, sendo possível sincronizar transações entre 
+dispositivos e acompanhar o orçamento mesmo sem ligação à internet, através da 
+sua versão móvel que regista despesas quando ocorrem, o que pode ser útil para 
+aumentar a consciência financeira diária [18], [19].  
+ 
+ 
+3.2.3 Monefy 
+A aplicação Monefy é uma ferramenta de gestão financeira pessoal que se 
+distingue pela sua interface intuitiva e pela facilidade com que os utilizadores 
+podem registar despesas e receitas de forma rápida e simplificada, bastando inserir 
+o valor e selecionar a categoria corr espondente. A aplicação permite categorizar 
+gastos, visualizar distribuições de despesas através de gráficos claros e comparar 
+as despesas com a renda mensal, ajudando o utilizador a acompanhar o seu 
+orçamento diário e mensal de forma visual e acessível. A dicionalmente, Monefy 
+oferece sincronização de dados entre dispositivos, personalização de categorias e 
+suporte a múltiplas moedas, o que contribui para uma experiência de utilização 
+fluida e adaptável a diferentes contextos pessoais [20], [21].  
+ 
+Figura 3 - Boonzi | Categoria de Operações. 
+ 
+Figura 4 - Boonzi | Monitorização de Despesas. 
+
+
+Diogo Inácio, José Lameiras 
+12 
+ 
+3.2.4 Stop Impulse Buying 
+A aplicação Stop Impulse Buying  é uma ferramenta móvel desenhada 
+especificamente para ajudar os utilizadores a reduzir gastos impulsivos e promover 
+decisões de compra mais conscientes através de mecanismos de reflexão pré -
+compra. A aplicação inclui um “ checklist” de decisão (“ Buy or Don ’t Buy ”) que 
+incentiva o utilizador a ponderar a necessidade e a utilidade de um item antes de o 
+adquirir, ajudando a pesar prós e contras e a tomar decisões alinhadas com os 
+objetivos financeiros pessoais. Além disso, integra desafios como o “ No Spend 
+Challenge” para acompanhar dias sem compras impulsivas e um rastreador de 
+poupanças resultantes de decisões de não compra, o que pode reforçar 
+comportamentos financeiros disciplinados e conscientes [22], [23].  
+ 
+ 
+Figura 5 - Monefy | Monitorização de 
+Orçamento. 
+ 
+Figura 6 - Monefy | Menu de Funcionalidades. 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+13 
+ 
+3.2.5 Impause 
+A aplicação Impause – Stop Impulse Spending  é orientada para a construção 
+de hábitos de consumo mais conscientes através de ferramentas de suporte 
+comportamental que atuam no momento crítico antes de uma compra impulsiva. 
+Fundamentada em princípios de psicologia comportamental, Impause oferece 
+funcionalidades como o registo de emoções ligadas ao gasto, ferramentas em 
+tempo real para pausar e reorientar a decisão de compra, módulos diários de treino 
+de autocontrolo e desafios de comportamento financeiro ajustados ao utilizador. A 
+aplicação também incentiva a reflexão sobre decisões passadas e a visualização 
+de padrões individuais, ajudando a treinar o cérebro para reconhecer e gerir 
+impulsos de gasto com maior intencionalidade. Neste sentido, Impause vai além 
+das aplicações de orçamento tradicionais, pois procura não só monitorizar gastos, 
+mas intervir cognitivamente antes da compra, fomentando uma relação mais 
+consciente e planeada com o dinheiro [24], [25].  
+ 
+ 
+Figura 7 - Stop Impulsive Buying | Questionário 
+de Necessidades. 
+ 
+Figura 8 - Stop Impulsive Buying  | Desafio 
+Economico. 
+
+
+Diogo Inácio, José Lameiras 
+14 
+ 
+3.2.6 Comparação de Aplicações de Gestão Financeira 
+Com o objetivo de compreender o panorama atual das aplicações móveis 
+relacionadas com a gestão de consumo, incluindo tanto ferramentas de gestão  
+financeira como aplicações que incorporam mecanismos de autocontrolo 
+psicológico, procedeu-se à análise funcional de várias soluções representativas no 
+mercado. O gráfico comparativo apresentado permite uma visualização clara e 
+concisa das principais func ionalidades oferecidas por cada aplicação analisada, 
+destacando não apenas capacidades de orçamento e rastreio de despesas, mas 
+também mecanismos de intervenção cognitiva que visam apoiar o utilizador no 
+controlo de impulsos de compra. 
+ 
+ 
+ 
+ 
+ 
+ 
+Figura 9 - Impause | Monitorização de 
+Orçamento Mensal. 
+ 
+Figura 10 - Impause | Menu de Despesas. 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+15 
+Tabela 1 - Comparação de aplicações de gestão financeira. 
+Aplicação/ 
+Funcionalidades 
+Orçamento Rastreio 
+de 
+Despesas 
+Sync 
+Bancário 
+Intervenção 
+Psicológica 
+Reflexão/ 
+Checklist 
+Toshl Finance Sim Sim Sim Não Não 
+Boonzi Sim Sim Não Não Não 
+Monefy Sim Sim Não Não Não 
+Stop Impulsive 
+Buying 
+ 
+Sim 
+ 
+Sim 
+ 
+Não 
+ 
+Sim 
+ 
+Sim 
+Impause Não Sim Não Sim Sim 
+ 
+ 
+3.3 Aplicações móveis de Sobriedade 
+Diversas aplicações móveis no domínio da saúde e mudança de comportamento 
+têm vindo a ser desenvolvidas com o objetivo de apoiar os utilizadores na 
+monitorização e gestão de consumos pessoais, tanto no que respeita a substâncias 
+como álcool e tabaco, como no incentivo a hábitos de vida mais saudáveis e 
+conscientes. Estas ferramentas oferecem mecanismos que promovem a 
+autorreflexão, acompanhamento do progresso ao longo do tempo e reforço da 
+motivação para adotar comportamentos de consumo mais equilibrados, integrando 
+métricas de tempo sem consumo, metas pessoais e indicadores de impacto. No 
+entanto, tal como observado noutra s categorias de ferramentas voltadas à 
+mudança comportamental, muitas destas aplicações concentram-se principalmente 
+na observação de padrões de consumo e no suporte ao utilizador ao longo do 
+tempo, em vez de intervir diretamente no momento imediato em que  o utilizador 
+enfrenta um impulso de consumo. Com base neste enquadramento, segue-se uma 
+análise das aplicações selecionadas que abordam estes aspetos de saúde e 
+autocontrolo [26].  
+ 
+3.3.1 QuitNow 
+A aplicação QuitNow é uma ferramenta móvel destinada a apoiar utilizadores na 
+cessação do tabagismo, promovendo a mudança de comportamento através de 
+funcionalidades que incentivam a autorreflexão e o acompanhamento do progresso 
+ao longo do tempo. A aplicação mostra claramente ao utilizador há quanto tempo 
+deixou de fumar, quantos cigarros deixou de consumir, quanto dinheiro poupou e 
+como a sua saúde tem melhorado desde o início do processo, integrando 
+
+Diogo Inácio, José Lameiras 
+16 
+indicadores de saúde baseados em dados da Organização Mundial da Saúde que  
+são atualizados regularmente. Além disso, QuitNow disponibiliza uma comunidade 
+de apoio onde os utilizadores podem partilhar experiências e receber 
+encorajamento, bem como um curso passo a passo para a cessação, sessões ao 
+vivo com especialistas e uma sér ie de marcos motivacionais que celebram 
+pequenas conquistas no caminho para uma vida sem tabaco [27].  
+ 
+ 
+3.3.2 Smoke Free 
+Smoke Free  é uma aplicação móvel destinada a apoiar a cessação do 
+tabagismo, permitindo ao utilizador monitorizar o tempo sem fumar, o número de 
+cigarros evitados e o dinheiro poupado, bem como registar episódios de desejo de 
+fumar num diário pessoal. A aplicação inclui também missões diárias e técnicas 
+motivacionais baseadas em evidência, que visam fortalecer a determinação do 
+utilizador ao longo do processo de abandono [28].  
+ 
+ 
+Figura 11 -  QuitNow | Página de Progresso. 
+ 
+Figura 12 - QuitNow | Página de Sincronização 
+com Relógio. 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+17 
+ 
+3.3.3 DrinkControl – Alcohol Tracker 
+DrinkControl – Alcohol Tracker é uma aplicação móvel concebida para ajudar os 
+utilizadores a monitorizar e compreender o seu consumo de álcool, convertendo 
+bebidas em unidades padrão e permitindo visualizar padrões de ingestão ao longo 
+do tempo. A aplicação inclui um diário inteligente  onde os utilizadores podem 
+registar o tipo, a quantidade e o momento das bebidas, aceder a estatísticas de 
+consumo, calorias e dinheiro gasto, e marcar dias sem álcool ou sequências de 
+sobriedade, o que pode contribuir para uma maior consciência dos hábit os de 
+consumo e, consequentemente, um maior autocontrolo. DrinkControl também 
+compara o consumo com diretrizes de saúde para consumo moderado, ajudando 
+utilizadores a manter -se dentro de limites considerados de baixo risco e a refletir 
+sobre os impactos físicos e económicos das suas escolhas [29].  
+ 
+ 
+Figura 13 - Smoke Free | Página de Motivação. 
+ 
+Figura 14 – Smoke Free | Página de Objetivos. 
+
+
+Diogo Inácio, José Lameiras 
+18 
+ 
+3.3.4 Sober Time 
+Sober Time é uma aplicação móvel concebida para apoiar utilizadores na 
+monitorização da sobriedade e na gestão de comportamentos de consumo de 
+substâncias, como álcool, tabaco ou outras dependências, através de um contador 
+de dias que regista há quanto tempo o utilizador está sóbrio e das estatísticas 
+associadas. A aplicação permite definir metas de sobriedade, acompanhar o tempo 
+sem consumo ao segundo, monitorizar dinheiro poupado e padrões de uso, e 
+incentiva o utilizador com mensagens motivacionais diárias e acesso a uma 
+comunidade de apoio que partilha experiências e estratégias de recuperação [30]. 
+ 
+ 
+Figura 15 - Drink Control | Monitorização de 
+Progresso. 
+ 
+Figura 16 - Drink Control | Adicionar Bebida. 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+19 
+ 
+3.3.5 I Am Sober 
+I Am Sober é uma aplicação móvel focada em apoiar utilizadores na manutenção 
+da sobriedade e mudança de hábitos relacionados com o consumo de substâncias 
+como álcool, tabaco ou outras adições, através do acompanhamento diário dos dias 
+sóbrios e da ce lebração de marcos pessoais. A aplicação permite ao utilizador 
+visualizar o tempo total sem consumo, definir compromissos diários, analisar 
+gatilhos e padrões que influenciam o comportamento, registar os motivos pessoais 
+para permanecer sóbrio e calcular o  dinheiro e o tempo poupados ao evitar 
+substâncias, reforçando tanto a consciência do impacto económico como a 
+motivação para a mudança de hábito. Além disso, I Am Sober  oferece 
+funcionalidades de personalização da experiência e acesso a uma comunidade de 
+apoio que partilha experiências e estratégias de recuperação, o que pode aumentar 
+o suporte social e a responsabilização ao longo da jornada [31].  
+ 
+ 
+Figura 17 - Sober Time | Ecrã Principal. 
+ 
+Figura 18 - Sober Time | Monitorização de 
+Poupança. 
+
+
+Diogo Inácio, José Lameiras 
+20 
+ 
+3.3.6 Comparação de Aplicações de Sobriedade 
+Com o objetivo de compreender o panorama atual das aplicações móveis 
+relacionadas com a gestão de consumo e autocontrolo, foi realizada uma análise 
+funcional de várias soluções representativas do mercado. A tabela seguinte 
+apresenta uma comparação sintética das principais funcionalidades oferecidas por 
+cada aplicação analisada, permitindo identificar de forma clara quais os 
+mecanismos disponíveis em cada solução e em que medida estes contribuem para 
+a promoção de comportamentos de consumo mais conscientes. Esta análise facilita 
+a identificação de lacunas no estado da arte, relevantes para a definição da 
+aplicação proposta neste projeto. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Figura 19 - I Am Sober | Página Motivacional. 
+ 
+Figura 20 - I Am Sober  | Monitorização de 
+Progresso. 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+21 
+Tabela 2 - Comparação de Aplicações de Sobriedade. 
+ 
+3.3 Revisões académicas e estudos sobre aplicações de gestão 
+financeira 
+A literatura científica contemporânea fornece perceções importantes sobre o 
+papel, aceitação e funcionalidades das aplicações de gestão financeira: 
+Um estudo recente sistematiza o uso da gamificação em finanças pessoais, 
+analisando 45 investigações empíricas que exploram como elementos lúdicos 
+podem influenciar atitudes e comportamentos financeiros dos utilizadores. Esta 
+linha de investigação mostra que a incorporação de mecânicas de jogo pode 
+aumentar o envolvimento e potenciar mudanças comportamentais positivas como 
+poupança e consciencialização [32].  
+Funcionalidade/
+Aplicação 
+QuitNow Smoke 
+Free 
+DrinkControl Sober 
+Time 
+I Am Sober 
+Contador de dias 
+sem consumo 
+ 
+Sim 
+ 
+Sim 
+ 
+Não 
+ 
+Sim 
+ 
+Sim 
+Monitorização de 
+padrões de 
+consumo 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+Cálculo de 
+dinheiro 
+poupado 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+Definição de 
+metas pessoais 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ Registo de 
+emoções 
+ 
+Não 
+ 
+Sim 
+ 
+Não 
+ 
+Não 
+ 
+Sim 
+Feedback 
+motivacional 
+diário 
+ 
+Sim 
+ 
+Sim 
+ 
+Não 
+ 
+Sim 
+ 
+Sim 
+Comunidade de 
+apoio 
+Sim Não Não Sim Sim 
+Ausência de 
+intervenção 
+imediata no 
+impulso 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+ 
+Sim 
+
+Diogo Inácio, José Lameiras 
+22 
+Artigos sobre aceitação de tecnologias de gest ão financeira móvel (usando 
+modelos como UTAUT2) indicam que fatores como motivação hedónica, benefícios 
+percebidos, e facilidade de uso impactam significativamente a adoção e utilização 
+destas aplicações pelos consumidores [33].  
+A investigação também inc lui estudos de aplicações desenvolvidas 
+academicamente para melhorar a literacia financeira, mostrando que ferramentas 
+tecnológicas podem promover a educação financeira e mudar comportamentos de 
+utilização de recursos económicos [34].  
+Estas análises mostram que existe um corpo de conhecimento académico que 
+avalia não só as características técnicas das aplicações, mas também como estas 
+influenciam atitudes e comportamentos financeiros do utilizador, aspetos que são 
+essenciais para desenvolver soluções que u ltrapassem o controlo básico de 
+despesas e abordem mudanças comportamentais [35].  
+ 
+3.4 Análise crítica e identificação de lacunas 
+Ao cruzar a análise das aplicações existentes com a literatura académica, 
+podem identificar-se várias limitações e oportunidades de inovação. 
+3.4.1 Lacunas nas soluções existentes 
+Foco limitado em impulsividade — a maioria das aplicações foca -se em 
+monitorização e análise de gastos após o evento de consumo, mas não em 
+intervenções pré-compra que possam ajudar a reduzir a impulsividade no momento 
+decisório. 
+Pouca personalização comportamental — enquanto os usuários podem definir 
+orçamentos e metas, poucas aplicações adaptam os seus alertas e  intervenções 
+de acordo com o perfil psicológico e os gatilhos de compra impulsiva de cada 
+utilizador. 
+Gamificação pouco explorada em contextos de autocontrolo — embora haja 
+literatura que sugira impactos positivos da gamificação em finanças, nem todas as 
+aplicações mainstream a incorporam de forma robusta nem a ligam diretamente à 
+mudança de comportamentos de consumo [36].  
+Educação financeira integrada de forma limitada — muitas aplicações fornecem 
+dados e relatórios, mas nem sempre explicam o porquê por trás desses números 
+ou oferecem orientação em termos de hábitos de consumo. A educação financeira 
+é um fator essencial para mudanças sustentáveis de comportamento [37].  
+ 
+ 
+ 
+ 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+23 
+3.4.2 Oportunidades de diferenciação para a aplicação proposta 
+Intervenções em tem po real que ajudem o utilizador a refletir antes de uma 
+compra impulsiva — por exemplo, pausas sugeridas, perguntas refletivas ou 
+recordatórios baseados em gatilhos identificados pelo utilizador. 
+Gamificação comportamental especificamente desenhada para reforçar hábitos 
+de consumo conscientes em vez de meramente visualizar dados financeiros. 
+Educação financeira integrada com micro-conteúdos e desafios educativos que 
+aumentem a literacia financeira ao mesmo tempo que gerem o comportamento de 
+consumo. 
+Estas lacunas e oportunidades serão a base para a definição de requisitos 
+funcionais e não funcionais da aplicação que se propõe neste projeto. 
+ 
+3.5 Conclusões do Estado da Arte 
+O estado da arte demonstra que exist em diversas aplicações de gestão 
+financeira pessoal com funcionalidades eficientes para orçamento e controlo de 
+despesas, mas quase nenhuma aborda diretamente a prevenção ou redução da 
+compra impulsiva como foco principal. A literatura académica aponta par a o 
+potencial da gamificação e da personalização comportamental para influenciar 
+positivamente atitudes financeiras, mas estas abordagens ainda estão pouco 
+exploradas nas soluções mainstream [38]. 
+ 
+ 
+ 
+ 
+  
+
+Diogo Inácio, José Lameiras 
+24 
+4. Descrição da Aplicação RefleteConsumo 
+Neste capítulo é apresentada a aplicação RefleteConsumo, descrevendo a sua 
+estrutura geral, o painel principal, as áreas funcionais e a forma como estas apoiam 
+o utilizador na reflexão sobre hábitos de consumo. A aplicação foi concebida com 
+uma abordagem e ducativa e não punitiva, tendo como objetivo promover a 
+consciencialização dos comportamentos de consumo excessivo, sem recorrer a 
+mecanismos de controlo financeiro direto, integração com dados bancários ou 
+imposição de limites ao utilizador. 
+A RefleteConsumo não se posiciona como uma aplicação de gestão financeira 
+tradicional, mas como uma ferramenta complementar orientada para a reflexão 
+comportamental, centrada na distinção entre desejo de compra e gasto efetivo. A 
+aplicação privilegia a simplicidade de utilização, a acessibilidade das 
+funcionalidades e o respeito pela autonomia, privacidade e liberdade de decisão do 
+utilizador. 
+A navegação é organizada de forma intuitiva, através de um menu inferior, 
+permitindo o acesso às diferentes áreas funcionais da aplicação e promovendo uma 
+experiência fluida e contínua. 
+ 
+4.1 Painel Principal – Registo de Desejos de Compra 
+O painel principal da RefleteConsumo constitui o ponto central da aplicação e 
+foi concebido para permitir o registo imediato dos desejos de compra, isto é, o 
+momento em que o utilizador pensa ou considera adquirir um produto ou serviço, 
+independentemente de a compra vir ou não a ser concretizada. 
+Neste painel, o utilizador pode registar um desejo de compra de forma simples 
+e rápida, sendo convidado a indicar, para além do objeto ou serviço pretendido, em 
+quanto tempo considera que poderá tomar uma decisão relativamente a essa 
+compra. Adicionalmente, no momento do registo, o utilizador deve selecionar o seu 
+estado de espírito, permitindo uma reflexão posterior sobre a relação entre 
+emoções e comportamentos de consumo. 
+Este registo não corresponde a uma despesa real, funcionando como um 
+mecanismo de consciencialização dos impulsos de compra e promovendo uma 
+pausa reflexiva antes da tomada de decisão. 
+ 
+4.2 Compras Pendentes 
+A área de compras pendentes reúne todos os desejos de compra previamente 
+registados no painel principal. Neste submenu, o utilizador pode rever cada desejo 
+e decidir se aceita ou rejeita a sua concretização. 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+25 
+Caso o utilizador confirme que a compra foi efetivamente realizada, o registo 
+passa a ser considerado um gasto real e é automaticamente integrado na área de 
+gastos da aplicação. Caso o utilizador opte por não concretizar a compra, o desejo 
+é descartado, não sendo contabilizado como despesa. 
+Quando o tempo definido inicialmente pelo utilizador para tomar uma decisão é 
+ultrapassado sem qualquer ação, o desejo passa a ser classi ficado como desejo 
+ultrapassado, permitindo ao utilizador refletir sobre compras que perdeu relevância 
+com o passar do tempo. Esta funcionalidade reforça a distinção entre intenção e 
+ação, promovendo decisões de consumo mais conscientes. 
+ 
+4.3 Área de Gastos 
+A área de gastos apresenta exclusivamente as despesas efetivamente 
+confirmadas pelo utilizador, não incluindo desejos de compra não concretizados. 
+Esta separação garante maior rigor na informação apresentada e evita a 
+contabilização indevida de intenções como despesas reais. 
+Nesta secção, o utilizador pode consultar gráficos e resumos visuais relativos 
+aos seus gastos, nomeadamente a distribuição por categorias e a evolução dos 
+consumos ao longo do tempo. Estas representações permitem identificar padrões 
+de consumo recorrentes e áreas onde os gastos são mais frequentes, apoiando 
+uma reflexão informada sobre os hábitos de consumo. 
+ 
+4.4 Smoke Tracker 
+A RefleteConsumo integra uma área específica dedicada ao acompanhamento 
+do consumo de tabaco, disponibilizada  apenas aos utilizadores que indiquem ser 
+fumadores durante a configuração do perfil. Para utilizadores não fumadores, esta 
+funcionalidade não é apresentada, garantindo uma experiência personalizada. 
+O Smoke Tracker  permite o registo do consumo de tabaco, bem como a 
+visualização da última vez que o utilizador fumou, funcionando como um elemento 
+de consciencialização contínua. Para além do registo diário, a aplicação 
+disponibiliza uma subpágina dedicada à visualização de estatísticas, onde o 
+utilizador pode consultar informação resumida sobre a frequência do consumo e o 
+impacto financeiro associado. 
+Esta funcionalidade assume um caráter educativo e reflexivo, não coercivo, 
+promovendo a consciencialização de um comportamento que representa 
+simultaneamente um risco para a saúde e uma despesa recorrente. 
+ 
+ 
+
+Diogo Inácio, José Lameiras 
+26 
+4.5 Ideia Diária 
+A funcionalidade ideia diária consiste na apresentação de mensagens curtas de 
+reflexão, disponibilizadas diariamente ao utilizador. Estas ideias visam incentivar o 
+consumo consciente, promover pausas reflexivas e questionar comportamentos 
+impulsivos de forma simples e acessível. 
+O utilizador tem a possibilidade de guardar ideias que considere relevantes, 
+ficando estas disponíveis em um submenu próprio para consulta posterior. Esta 
+funcionalidade permite criar um repositório pessoal de mensagens reflexivas, 
+reforçando a aprendizagem contínua ao longo do tempo. 
+ 
+4.6 Gestão do Perfil do Utilizador 
+A aplicação disponibiliza ainda uma área dedicada à gestão do perfil, onde o 
+utilizador pode atualizar as suas informações pessoais e optar por realizar 
+novamente o quiz, caso pretenda reavaliar o seu perfil de consumo. Esta secção 
+permite ao utilizador ajustar os seus dados e refletir novamente sobre os seus 
+hábitos ao longo do tempo, reforçando a personal ização da experiência e a 
+autonomia na utilização da RefleteConsumo. 
+ 
+4.7 Contributo da Aplicação para a Mudança de Comportamentos  
+A RefleteConsumo foi concebida para apoiar a mudança comportamental 
+através de uma abordagem gradual e não punitiva, distingu indo claramente entre 
+desejo, reflexão e ação. O registo antecipado dos desejos de compra, a validação 
+consciente das despesas e a análise posterior dos gastos efetivos permitem tornar 
+visíveis comportamentos que, frequentemente, passam despercebidos no 
+quotidiano. 
+A integração de funcionalidades como a ideia diária, o Smoke Tracker  e a 
+visualização gráfica dos gastos reforça a componente educativa da aplicação, 
+promovendo uma relação mais consciente, equilibrada e informada com o 
+consumo. A aplicação respe ita o ritmo individual do utilizador, não impondo 
+limitações nem penalizações, funcionando como um apoio contínuo à autorreflexão 
+e à tomada de decisões mais ponderadas. 
+ 
+ 
+ 
+ 
+ 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+27 
+4.8 Mapa Mental 
+ 
+Figura 21 - Mapa Mental. 
+  
+
+
+Diogo Inácio, José Lameiras 
+28 
+5. Storyboards da Aplicação 
+Foram desenvolvidos storyboards e protótipos de baixa fidelidade com o objetivo 
+de testar a estrutura de navegação e os fluxos de interação da aplicação 
+RefleteConsumo. Para a criação dos protótipos de baixa fidelidade foi utilizado um 
+programa de desenho para Samsung, Samsung Notes no qual foram desenhadas 
+manualmente as diferentes interfaces da aplicação, representando de forma 
+simplificada a organização dos ecrãs, os elementos de interação e os percursos do 
+utilizador.  
+ 
+Ecrã Inicial 
+O ecrã inicial da aplicação RefleteConsumo, apresentado na Figura 2 2, 
+corresponde ao primeiro contacto do utilizador com a plataforma e tem como 
+objetivo encaminhá -lo para o processo de autenticação ou criação de conta. A 
+interface apresenta uma mensa gem de boas -vindas e disponibiliza duas opções 
+principais — iniciar sessão ou registar — permitindo distinguir de forma clara 
+utilizadores já registados de novos utilizadores. O design simples e direto promove 
+uma navegação intuitiva e prepara o utilizador  para as etapas seguintes da 
+aplicação.  
+ 
+Figura 22 - Wireframe Inicial. 
+  
+ 
+ 
+ 
+ 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+29 
+Ecrã de Login 
+O ecrã de login da aplicação RefleteConsumo, apresentado na Figura 2 3, 
+permite ao utilizador autenticado aceder à sua conta através da introdução do 
+endereço de email e da palavra -passe. A interface inclui uma opção clara para 
+iniciar sessão e um atalho para o registo de novos utilizadores, garantindo uma 
+navegação simples e intuitiva. Este ecrã assegura o acesso individualizado à 
+aplicação e funciona como ponto de transição para o menu principal personalizado 
+de acordo com o perfil do utilizador. 
+ 
+Figura 23 - Wireframe Login. 
+ 
+Ecrã de Registo 
+O ecrã de registo da aplicação RefleteConsumo, apresentado na Figura 2 4, 
+permite a criação de uma nova conta através da introdução de dados essenciais, 
+como nome, endereço de email e palavra -passe. A confirmação da palavra-passe 
+assegura a correção da informação introduzida, enquanto a opção de 
+encaminhamento para o login fac ilita a navegação para utilizadores já registados. 
+Este ecrã constitui o primeiro passo para a personalização da experiência de 
+utilização da aplicação. 
+Após o registo da conta, temos a Figura 25. Nesta fase da aplicação, iremos 
+criar o perfil do utilizador, sendo necessário indicar o género e se o utilizador é 
+fumador. Caso o utilizador seja fumador, a aplicação terá uma funcionalidade 
+adicional denominada Smoke Tracker  Figura 37 e Figura 38.  Se o utilizador não 
+for fumador, o Smoke Tracker não estará disponível, e a interface da aplicação será 
+diferente. 
+ 
+
+
+Diogo Inácio, José Lameiras 
+30 
+ 
+Figura 24 – Wireframe Criar Conta.  
+ 
+Figura 25 - Wireframe Criar Perfil. 
+ 
+ 
+Quiz Inicial 
+O quiz inicial da aplicação RefleteConsumo, ilustrado nas Figuras 2 6, 27, 28 e 
+29, constitui uma funcionalidade facultativa, apresentada ao utilizador após o 
+processo de registo, com o objetivo de promover a autorreflexão sobre os seus 
+hábitos de consumo. A Figura 26 introduz o quiz permitindo ao utilizador optar entre 
+realizar ou não o questionário. As Figuras 2 7 e 28 exemplificam a estrutura das 
+perguntas, organizadas de forma sequencial e baseadas numa esca la de 
+frequência (sempre, frequentemente, raramente, nunca), facilitando respostas  
+rápidas e intuitivas. A Figura 2 8 apresenta o ecrã de resultado do quiz, no qual é 
+devolvida ao utilizador uma indicação geral sobre o seu perfil de consumo. Importa 
+salientar que este resultado não é absoluto nem é um diagnóstico, funcionando 
+apenas como um indicador orientador da probabilidade de existência de 
+comportamentos consumistas, com o objetivo de aumentar a consciência do 
+utilizador relativamente aos seus padrões d e consumo, sem impor rótulos ou 
+julgamentos definitivos. 
+ 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+31 
+ 
+Figura 26 - Wireframe Inicial do Quiz. 
+ 
+Figura 27 - Wireframe da pergunta 1 do Quiz. 
+ 
+Figura 28 - Wireframe da pergunta 10 do Quiz. 
+ 
+Figura 29 - Wireframe do resultado do Quiz. 
+ 
+ 
+Página Inicial – Utilizador Não Fumador 
+O formulário de desejo de compra para o utilizador, apresentado na Figura 30, 
+permite a introdução de um potencial gasto antes da sua concretização. Nesta 
+interface, o utilizador pode indicar informações como o nome do item, preço 
+estimado, categoria, descrição, estado emocional, o seu dinheiro antes da compra 
+e o prazo de espera antes da decisão final. Este registo tem como objetivo promover 
+a reflexão pré -compra, distinguindo intenção de gasto efetivo e incentivando 
+decisões de consumo mais conscientes.  
+
+
+Diogo Inácio, José Lameiras 
+32 
+ 
+ 
+Figura 30 - Wireframe do Pagina Inicial "Utilizador não Fumante". 
+ 
+Página inicial – Utilizador Fumador 
+Para o utilizador fumador, apresentado na Figura 31, mantém a estrutura 
+funcional do utilizador não fumador, mas adiciona uma função Smoke Tracker vista 
+mais a frente.  
+ 
+ 
+ 
+Figura 31 - Wireframe do formulário "Utilizador Fumante". 
+ 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+33 
+Compras Pendentes 
+A área de compras pendentes da aplicação RefleteConsumo, apresentada na 
+Figura 3 2, reúne os desejos de compra registados pelo utilizador que ainda se 
+encontram em fase de decisão. Para cada item é indicado o tempo restante até ao 
+prazo definido, sendo disponibilizadas opções para comprar editar ou eliminar. Esta 
+funcionalidade permite acompanhar a evolução dos desejos ao longo do tempo, 
+promovendo a reflexão e apo iando decisões de consumo mais conscientes.  Cada 
+item comprado será adicionado aos gastos, cada item apagado será adicionado à 
+poupança realizada. 
+ 
+Figura 32 - Wireframe "Compras Pendentes". 
+ 
+Área de Gastos 
+A área de gastos da aplicação RefleteConsumo, apresentada na Figura 33, 
+permite ao utilizador visualizar de forma resumida os gastos efetivamente 
+realizados. A interface exibe a distribuição dos gastos por categorias, 
+acompanhada do valor total gasto e do montante poupado, que se refere à quantia 
+que o utilizador optou por não gastar. A representação gráfica facilita a 
+interpretação dos dados e contribui para a consciencialização financeira, apoiando 
+o utilizador na análise dos seus padrões de consumos. 
+ 
+
+
+Diogo Inácio, José Lameiras 
+34 
+ 
+Figura 33 - Wireframe "Gastos". 
+ 
+Dica do Dia 
+O ecrã da funcionalidade Dica do Dia, apresentado na Figura 3 4, disponibiliza 
+ao utilizador uma mensagem diária de reflexão orientada para a promoção do 
+consumo consciente. Esta interface permite a leitura do conteúdo apresentado e 
+oferece opções de guardar, não guardar  e um botão “Guardad as” para aceder à 
+próxima interface Figura 35. 
+ 
+ 
+Figura 34 - Wireframe da "Dica do Dia". 
+ 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+35 
+Dicas Guardadas 
+O ecrã de Dicas Guardadas , apresentado na Figura 35, reúne todas as 
+mensagens de reflexão previamente guardadas pelo utilizador na funcionalidade 
+Dica do Dia. Nesta interface, o utilizador pode consultar cada dica individualmente 
+ou optar pela sua remoção, permitindo uma gestão personalizada dos conteúdos 
+guardados. Esta secção funciona como um repositório de apoio à reflexão contínua, 
+reforçando a compo nente educativa da aplicação e promovendo a autonomia do 
+utilizador. 
+ 
+ 
+Figura 35 - Wireframe "Dicas Guardadas". 
+ 
+Perfil do Utilizador 
+O ecrã de perfil do utilizador, apresentado na Figura 3 6, permite a visualização 
+do perfil de consumo atribuído com base no quiz inicial, bem como o acesso às 
+opções de repetir o questionário e editar informações pessoais. O perfil 
+apresentado funciona como um indicador orientador, não absoluto, reforçando a 
+autorreflexão sobre os hábitos de consumo. Esta área contribui para a 
+personalização da experiência e reconhece a possibilidade de evolução dos 
+comportamentos ao longo do tempo. 
+ 
+
+
+Diogo Inácio, José Lameiras 
+36 
+ 
+Figura 36 - Wireframe de perfil. 
+ 
+Área do Utilizador Fumador (Smoke Tracker)  
+A área do utilizador fumador, apresentada na Figura 3 7, corresponde à função 
+Smoke Tracker e permite o acompanhamento do consumo de tabaco. Neste ecrã, 
+o utilizador pode registar um novo consumo, visualizar o tempo decorrido desde a 
+última vez que fumou e aceder à área de estatísticas Figura 38. Esta funcionalidade 
+tem como objetivo promover a consciencialização do comportamento, integrando-
+se de forma coerente na experiência global da aplicação. 
+ 
+Figura 37 - Wireframe de Controlo de Tabaco. 
+ 
+
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+37 
+Estatísticas do Smoke Tracker  
+O ecrã de estatísticas do Smoke Tracker, apresentado na Figura 38, permite ao 
+utilizador consultar dados resumidos sobre o seu consumo de tabaco ao longo do 
+tempo. A interface apresenta informação diária, semanal e mensal, facilitando a 
+análise da frequência de consumo e da sua evolução. Esta fun cionalidade reforça 
+a componente de monitorização e autorreflexão, apoiando o utilizador na tomada 
+de decisões mais conscientes relativamente ao seu comportamento. 
+ 
+ 
+Figura 38 - Wireframe de Estatísticas do Controlo de Tabaco. 
+ 
+  
+
+
+Diogo Inácio, José Lameiras 
+38 
+6. Conclusões e Trabalho Futuro 
+O presente projeto teve como objetivo a conceção de uma proposta de aplicação 
+móvel, denominada RefleteConsumo, orientada para a promoção do consumo 
+consciente e para a prevenção de comportamentos de compra impulsiva. Partindo 
+da análise, do fenómeno, do consumismo e das compras impulsivas, foi possível 
+compreender a sua natureza multifatorial, envolvendo dimensões psicológicas, 
+sociais, digitais e económicas, bem como as consequências emocionais, 
+financeiras e comportamentais associadas a este tipo de comportamento. 
+A análise do estado da arte evidenciou que, apesar da existência de diversas 
+aplicações de gestão financeira e de sobriedade, a maioria das soluções 
+disponíveis centra-se na monitorização pós -despesa ou no acompan hamento do 
+comportamento ao longo do tempo, revelando uma intervenção limitada no 
+momento crítico da decisão de compra impulsiva. Esta lacuna constituiu a principal 
+motivação para o desenvolvimento conceptual da aplicação proposta. 
+A aplicação RefleteConsumo diferencia-se por adotar uma abordagem 
+educativa, não punitiva e centrada na autorreflexão, promovendo a distinção entre 
+desejo de compra, reflexão e ação. Funcionalidades como o registo de desejos de 
+compra, as compras pendentes, a visualização de gast os reais, a ideia diária e o 
+quiz facultativo de autorreflexão permitem apoiar o utilizador na tomada de decisões 
+mais conscientes, respeitando a sua autonomia e privacidade. A integração do 
+módulo Smoke Tracker reforça ainda a ligação entre comportamentos de consumo 
+financeiro e hábitos de consumo prejudiciais à saúde, ampliando o alcance da 
+aplicação. 
+O desenvolvimento de storyboards e protótipos de baixa fidelidade permitiu 
+validar a estrutura de navegação e os fluxos de interação da aplicação, 
+assegurando coerência funcional e uma experiência de utilização intuitiva. Assim, 
+este trabalho demonstra o potencial das tecnologias móveis como ferramentas de 
+apoio à mudança comportamental, evidenciando que pequenas intervenções 
+reflexivas podem contribuir para uma relação mais equilibrada e consciente com o 
+consumo. 
+Como trabalho futuro, propõe-se a evolução da aplicação RefleteConsumo para 
+protótipos de média e alta  fidelidade, recorrendo a ferramentas de prototipagem 
+interativa e à implementação de uma versão funcional da aplicação. Esta fase 
+permitiria realizar testes de usabilidade com utilizadores reais, avaliando a eficácia 
+das funcionalidades propostas, a clareza da interface e o impacto da aplicação nos 
+comportamentos de consumo. 
+A implementação da aplica ção possibilitaria ainda a realização de estudos 
+empíricos e longitudinais, com o objetivo de analisar a evolução dos hábitos de 
+consumo dos utilizadores ao longo do tempo e medir o impacto da utilização 
+contínua da RefleteConsumo na redução de compras impulsivas. Adicionalmente, 
+poderiam ser exploradas funcionalidades complementares, como mecanismos de 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+39 
+gamificação, relatórios personalizados de progresso, notificações inteligentes ou 
+conteúdos educativos adaptativos baseados no perfil do utilizador. 
+Por fim , a aplicação poderia ser expandida para abranger outros 
+comportamentos de consumo ou hábitos de risco, mantendo a lógica de 
+autorreflexão e autocontrolo, reforçando o seu potencial como ferramenta de apoio 
+ao bem-estar financeiro, comportamental e à literacia do consumo consciente. 
+ 
+  
+
+Diogo Inácio, José Lameiras 
+40 
+Referências 
+[1] ISCTE -IUL Repository. (n.d.). "Título do Artigo." Retirado de: 
+https://repositorio.iscte-iul.pt/handle/10071/19058 
+[2] Oxford Academic. (2025). "Consumer Research Journal." Retirado de: 
+https://academic.oup.com/jcr/article-
+abstract/14/2/189/1830380?redirectedFrom=fulltext&login=false 
+[3] Frontiers in Psychology. (2021). "Psychology of Impulsive Buying." 
+Retirado de: 
+https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.69708
+0/full 
+[4] Reddy, A., et al. (2025). "The Influence of Social Commerce Features on 
+Impulse Purchases." Retirado de: https://acr-journal.com/article/the-influence-of-
+social-commerce-features-on-impulse-purchases-evidence-from-emerging-
+markets-1703/ 
+[5] ScienceDirect. (2025). "Impact of Digital Features on Impulsive Buying." 
+Retirado de: 
+https://www.sciencedirect.com/science/article/pii/S2451958825000910?via%3Dihu
+b 
+[6] PubMed Central. (2025). "Economic  Factors in Impulsive Buying." 
+Retirado de: https://pmc.ncbi.nlm.nih.gov/articles/PMC11336989/ 
+[7] ResearchGate. (2025). "The Impulsive Buying Behavior of HM Products 
+in Gen -Z: Th e Role of Income and Self -Esteem." Retirado de: 
+https://www.researchgate.net/publication/377971631_The_Impulsive_Buying_Beh
+avior_of_HM_Products_in_Gen-Z_The_Role_of_Income_and_Self-Esteem 
+[8] ResearchGate. (2025). "Consumer Impulsive Buying Causes, 
+Consequences, and Control." Retirado de: 
+https://www.researchgate.net/publication/377530823_Consumer_impulsive_buyin
+g_causes_consequences_and_control 
+[9] ResearchGate. (2025). "Effects of Impulsive Buying and Personal Debt 
+on Financial Stress." Retirado de: 
+https://www.researchgate.net/publication/368700572_Efeitos_das_compras_por_i
+mpulso_e_endividamento_pessoal_sobre_o_estresse_financeiro 
+[10] PubMed Central. (2025). "Impulsive Buying and Financial Stress." 
+Retirado de: https://pmc.ncbi.nlm.nih.gov/articles/PMC8206473/ 
+[11] ScienceDirect. (2025). "The Relationship Between Impulsive Buying and 
+Financial Stress." Retirado de: 
+https://www.sciencedirect.com/science/article/abs/pii/S096969892500387X 
+[12] PubMed Central. (2025). "Financial Management and Impulsive Buying." 
+Retirado de: https://pmc.ncbi.nlm.nih.gov/articles/PMC7723745/ 
+[13] MDPI. (2025). "Mobile Applications in Financial Management." Retirado 
+de: https://www.mdpi.com/1660-4601/19/1/135 
+
+RefleteConsumo - Soluções digitais para a redução do consumo impulsivo-Projeto I 
+ 
+41 
+[14] Deco Proteste. (2025). "Apps para Gestão de Finanças Pe ssoais." 
+Retirado de: https://www.deco.proteste.pt/familia-consumo/orcamento-
+familiar/noticias/apps-financas-pessoais-3-opcoes-seguras-gerir-seu-dinheiro 
+[15] Montepio. (2025). "Gestão do Orçamento Familiar - 9 Apps." Retirado 
+de: https://www.montepio.org/ei/pessoal/gestao-diaria/gerir-o-orcamento-familiar-
+9-apps/ 
+[16] Toshl. (n.d.). "Toshl Finance - Gestão Financeira Pessoal." Retirado de: 
+https://toshl.com/pt/ 
+[17] Google Play. (2025 ). "Expensoor." Retirado de: 
+https://play.google.com/store/apps/details?id=com.thirdframestudios.android.expe
+nsoor 
+[18] Montepio. (2025). "Gestã o do Orçamento Familiar - 9 Apps." Retirado 
+de: https://www.montepio.org/ei/pessoal/gestao-diaria/gerir-o-orcamento-familiar-
+9-apps/ 
+[19] Google Play. (2025). "Boonzi - Aplicação de Gestão Financeira." 
+Retirado de: 
+https://play.google.com/store/apps/details?id=com.boonzi.mobile&hl=pt_PT 
+[20] Inbrief. (2025). "Monefy - Gestão Financeira Simplificada." Retirado de: 
+https://inbrief.pt/monefy-gestao-financeira-simplificada-para-ti/ 
+[21] Google Play. (2025). "Monefy - Aplicação de Gestão Financeira." 
+Retirado de: 
+https://play.google.com/store/apps/details?id=com.monefy.app.lite&hl=pt_PT 
+[22] Stop Impulse. (2025). "Stop  Impulse Buying - Aplicação." Retirado de: 
+https://www.stopimpulse.com/ 
+[23] Apple Store. (2025). "Stop Impulse Buying - Budget." Retirado de: 
+https://apps.apple.com/us/app/stop-impulse-buying-budget/id6475173011 
+[24] Apple Store. (2025). "Impause - Stop Impulse Spending." Retirado de: 
+https://apps.apple.com/pt/app/impause-stop-impulse-spending/id6746744026 
+[25] Impause. (2025). "Impause - Aplicação de Gestão de Compras 
+Impulsivas." Retirado de: https://impause.com/ 
+[26] PubMed Central. (2025). "QuitNow - Cessação do Tabagismo." Retirado 
+de: https://pmc.ncbi.nlm.nih.gov/articles/PMC11845864/ 
+[27] Google Play. (2025). "QuitNow - Aplicação de Cessação do Tabagismo." 
+Retirado de: 
+https://play.google.com/store/apps/details?hl=en&id=com.EAGINsoftware.dejaloY
+a 
+[28] Google Play. (2025). "Smoke Fre e - Monitorização de Tabagismo." 
+Retirado de: 
+https://play.google.com/store/apps/details?id=com.portablepixels.smokefree 
+[29] Google Play. (2025). "DrinkCo ntrol - Alcohol Tracker." Retirado de: 
+https://play.google.com/store/apps/details?id=lv.happymoments.drinkcontrol 
+[30] Google Play. (2025). "Sober Time - Aplicação de Sobriedade." Retirado 
+de: https://play.google.com/store/apps/details?id=com.sociosoft.sobertime 
+
+Diogo Inácio, José Lameiras 
+42 
+[31] Google Play. (2025). "I Am Sober - Manutenção d e Sobriedade." 
+Retirado de: 
+https://play.google.com/store/apps/details?id=com.thehungrywasp.iamsober&hl=pt 
+[32] ResearchGate. (2025). "Gamification of Personal Finance." Retirado de: 
+https://www.researchgate.net/publication/397299947_Gamification_of_Personal_F
+inance_A_Systematic_Literature_Review 
+[33] ResearchGate. (2025). "Technology Acceptance of Mobile Personal 
+Finance Apps." Retirado de: 
+https://www.researchgate.net/publication/367527480_Mobile_Applications_for_Per
+sonal_Finance_Management_Technology_Acceptance_Perspective 
+[34] ERIC. (2025). "Personal Finance Management in Education." Retirado 
+de: https://files.eric.ed.gov/fulltext/ED654467.pdf 
+[35] MDPI. (2025). "Mobile Applications for Financial Management." Retirado 
+de: https://www.mdpi.com/1911-8074/18/8/455 
+[36] Self-Determination Theory. (2025). "Gamification in Personal Finance." 
+Retirado de: https://selfdeterminationtheory.org/wp-
+content/uploads/2024/03/2021_BitrianBuilCatalan_IJBM.pdf 
+[37] MDPI. (2025). "Financial Literacy and Gamification." Retirado de: 
+https://www.mdpi.com/1911-8074/18/8/455 
+[38] ResearchGate. (2025). "Gamification and Personal Finance." Retirado 
+de: 
+https://www.researchgate.net/publication/397299947_Gamification_of_Personal_F
+inance_A_Systematic_Literature_Review 
+ 

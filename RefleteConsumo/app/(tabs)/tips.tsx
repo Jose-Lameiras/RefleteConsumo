@@ -59,7 +59,6 @@ export default function TipsScreen() {
 
       if (allResponse.ok) {
         const allData = await allResponse.json();
-        console.log('📚 Total dicas:', Array.isArray(allData) ? allData.length : 0, allData);
         setAllTips(Array.isArray(allData) ? allData : []);
       } else {
         console.error('Erro dicas:', allResponse.status);

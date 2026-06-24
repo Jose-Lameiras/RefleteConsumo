@@ -3,9 +3,35 @@ import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View, TouchableO
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 export default function HomeScreen() {
+  const buildMoodKey = (nome: string, precoValor: number, categoriaValor: string, dataLiberacaoISO: string) => {
+    const nomeKey = (nome || '').trim().toLowerCase();
+    const precoKey = Number.isFinite(precoValor) ? precoValor.toFixed(2) : '0.00';
+    const categoriaKey = (categoriaValor || '').trim().toLowerCase();
+    return `${nomeKey}|${precoKey}|${categoriaKey}|${dataLiberacaoISO}`;
+  };
+
+  const salvarEstadoEspiritoLocal = async (nome: string, precoValor: number, categoriaValor: string, dataLiberacaoISO: string, mood: string) => {
+    try {
+      const key = buildMoodKey(nome, precoValor, categoriaValor, dataLiberacaoISO);
+      const raw = await AsyncStorage.getItem('desireMoodMap');
+      const currentMap = raw ? JSON.parse(raw) : {};
+      currentMap[key] = mood;
+      await AsyncStorage.setItem('desireMoodMap', JSON.stringify(currentMap));
+    } catch {
+      // Fallback silencioso: o desejo continua a ser guardado no servidor.
+    }
+  };
+
+  const buildReleaseDateFromDay = (selectedDay: Date) => {
+    // Always rebuild from scratch to avoid carrying previous date/time state.
+    const result = new Date();
+    result.setFullYear(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate());
+    result.setHours(23, 59, 0, 0);
+    return result;
+  };
+
   const getDefaultReflectionDate = () => {
     const base = new Date();
     base.setDate(base.getDate() + 1);
@@ -16,6 +42,7 @@ export default function HomeScreen() {
   const [nomeItem, setNomeItem] = useState('');
   const [preco, setPreco] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [estadoEspirito, setEstadoEspirito] = useState('');
   const [categoriasExistentes, setCategoriasExistentes] = useState<string[]>([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false);
@@ -25,6 +52,7 @@ export default function HomeScreen() {
   const [tempDate, setTempDate] = useState(getDefaultReflectionDate());
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const opcoesEstadoEspirito = ['Calmo', 'Ansioso', 'Entusiasmado', 'Stressado', 'Triste'];
 
   const gerarOpcoesDiasWeb = (totalDias: number = 90) => {
     const hoje = new Date();
@@ -47,30 +75,12 @@ export default function HomeScreen() {
   };
 
   const abrirCalendario = () => {
-    if (Platform.OS === 'android') {
-      DateTimePickerAndroid.open({
-        value: dataAlvo,
-        mode: 'date',
-        display: 'calendar',
-        minimumDate: new Date(),
-        onChange: (_event, selectedDate) => {
-          if (!selectedDate) return;
-          const finalDate = new Date(selectedDate);
-          finalDate.setHours(23, 59, 0, 0);
-          setDataAlvo(finalDate);
-        },
-      });
-      return;
-    }
-
     setTempDate(dataAlvo);
     setShowDateModal(true);
   };
 
   const confirmarDataReflexao = () => {
-    const finalDate = new Date(tempDate);
-    finalDate.setHours(23, 59, 0, 0);
-    setDataAlvo(finalDate);
+    setDataAlvo(buildReleaseDateFromDay(tempDate));
     setShowDateModal(false);
   };
 
@@ -130,7 +140,7 @@ export default function HomeScreen() {
   };
 
   const handleInserir = async () => {
-    if (!nomeItem || !preco || !categoria) {
+    if (!nomeItem || !preco || !categoria || !estadoEspirito) {
       Alert.alert('Aviso', 'Preenche todos os campos.');
       return;
     }
@@ -143,24 +153,31 @@ export default function HomeScreen() {
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
+      const precoNumerico = parseFloat(preco.replace(',', '.'));
+      const dataLiberacaoISO = dataAlvo.toISOString();
 
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ 
           nome: nomeItem, 
-          preco: parseFloat(preco.replace(',', '.')),
+          preco: precoNumerico,
           categoria,
           category: categoria,
-          dataLiberacao: dataAlvo.toISOString() // Enviamos a data e hora exata que deslizaste
+          estadoEspirito,
+          estadoDeEspirito: estadoEspirito,
+          mood: estadoEspirito,
+          dataLiberacao: dataLiberacaoISO // Enviamos a data e hora exata que deslizaste
         }),
       });
 
       if (response.ok) {
+        await salvarEstadoEspiritoLocal(nomeItem, precoNumerico, categoria, dataLiberacaoISO, estadoEspirito);
         Alert.alert('Sucesso', 'Desejo registado!');
         setNomeItem(''); 
         setPreco(''); 
         setCategoria('');
+        setEstadoEspirito('');
         setNovaCategoria('');
         setIsCreatingNewCategory(false);
         setDataAlvo(getDefaultReflectionDate());
@@ -190,6 +207,24 @@ export default function HomeScreen() {
           {categoria || 'Selecionar categoria'}
         </Text>
       </TouchableOpacity>
+
+      <Text style={style.label}>Estado de espirito:</Text>
+      <View style={style.moodContainer}>
+        {opcoesEstadoEspirito.map((mood) => {
+          const selecionado = estadoEspirito === mood;
+          return (
+            <TouchableOpacity
+              key={mood}
+              style={[style.moodChip, selecionado && style.moodChipSelected]}
+              onPress={() => setEstadoEspirito(mood)}
+            >
+              <Text style={[style.moodChipText, selecionado && style.moodChipTextSelected]}>
+                {mood}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       <Modal
         animationType="slide"
@@ -320,6 +355,8 @@ export default function HomeScreen() {
                   display={Platform.OS === 'android' ? 'calendar' : 'spinner'}
                   onChange={handleReflectionDateChange}
                   minimumDate={new Date()}
+                  themeVariant="light"
+                  textColor="#000000"
                 />
               )}
             </View>
@@ -389,6 +426,32 @@ const style = StyleSheet.create({
   categoryButtonText: {
     color: '#000000',
     fontSize: 14,
+  },
+  moodContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 15,
+  },
+  moodChip: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#f8fafc',
+  },
+  moodChipSelected: {
+    borderColor: '#2ec4b6',
+    backgroundColor: '#e6fffb',
+  },
+  moodChipText: {
+    color: '#334155',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  moodChipTextSelected: {
+    color: '#0f766e',
   },
   placeholderText: {
     color: '#8f8f8f',
