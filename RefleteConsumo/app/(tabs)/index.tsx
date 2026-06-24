@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View, Platform, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View, TouchableOpacity, ScrollView, Modal, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 export default function HomeScreen() {
-  const REFLECTION_PRESETS = [
-    { label: '24h', days: 1 },
-    { label: '3 dias', days: 3 },
-    { label: '7 dias', days: 7 },
-  ];
-
   const getDefaultReflectionDate = () => {
     const base = new Date();
     base.setDate(base.getDate() + 1);
+    base.setHours(23, 59, 0, 0);
     return base;
   };
 
@@ -25,16 +21,57 @@ export default function HomeScreen() {
   const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState('');
   const [dataAlvo, setDataAlvo] = useState(getDefaultReflectionDate());
-  const [selectedPreset, setSelectedPreset] = useState<number | null>(1);
-  const [showPicker, setShowPicker] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [tempDate, setTempDate] = useState(getDefaultReflectionDate());
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const aplicarPresetReflexao = (days: number) => {
-    const novaData = new Date();
-    novaData.setDate(novaData.getDate() + days);
-    setDataAlvo(novaData);
-    setSelectedPreset(days);
+  const gerarOpcoesDiasWeb = (totalDias: number = 90) => {
+    const hoje = new Date();
+    const dias: Date[] = [];
+
+    for (let i = 0; i < totalDias; i++) {
+      const d = new Date(hoje);
+      d.setDate(hoje.getDate() + i);
+      d.setHours(23, 59, 0, 0);
+      dias.push(d);
+    }
+
+    return dias;
+  };
+
+  const handleReflectionDateChange = (event: any, selectedDate?: Date) => {
+    if (selectedDate) {
+      setTempDate(selectedDate);
+    }
+  };
+
+  const abrirCalendario = () => {
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({
+        value: dataAlvo,
+        mode: 'date',
+        display: 'calendar',
+        minimumDate: new Date(),
+        onChange: (_event, selectedDate) => {
+          if (!selectedDate) return;
+          const finalDate = new Date(selectedDate);
+          finalDate.setHours(23, 59, 0, 0);
+          setDataAlvo(finalDate);
+        },
+      });
+      return;
+    }
+
+    setTempDate(dataAlvo);
+    setShowDateModal(true);
+  };
+
+  const confirmarDataReflexao = () => {
+    const finalDate = new Date(tempDate);
+    finalDate.setHours(23, 59, 0, 0);
+    setDataAlvo(finalDate);
+    setShowDateModal(false);
   };
 
   const carregarCategorias = async () => {
@@ -92,26 +129,14 @@ export default function HomeScreen() {
     setShowCategoryModal(false);
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    // No Android, fecha o picker ao selecionar; no iOS mantém o comportamento padrão
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
-    if (selectedDate) {
-      setDataAlvo(selectedDate);
-      setSelectedPreset(null);
-    }
-  };
-
   const handleInserir = async () => {
     if (!nomeItem || !preco || !categoria) {
       Alert.alert('Aviso', 'Preenche todos os campos.');
       return;
     }
 
-    // Evita que a data de libertação fique no presente/passado e conclua de imediato.
-    if (dataAlvo.getTime() <= Date.now() + 60 * 1000) {
-      Alert.alert('Aviso', 'Define uma data/hora futura para o tempo de reflexão.');
+    if (dataAlvo.getTime() <= Date.now()) {
+      Alert.alert('Aviso', 'Seleciona um dia futuro para o tempo de reflexão.');
       return;
     }
     
@@ -139,7 +164,6 @@ export default function HomeScreen() {
         setNovaCategoria('');
         setIsCreatingNewCategory(false);
         setDataAlvo(getDefaultReflectionDate());
-        setSelectedPreset(1);
       } else {
         Alert.alert('Erro', 'Não foi possível guardar o desejo.');
       }
@@ -238,51 +262,79 @@ export default function HomeScreen() {
       </Modal>
 
       <Text style={style.label}>Definir Data e Hora de Libertação:</Text>
-      <View style={style.presetRow}>
-        {REFLECTION_PRESETS.map((preset) => (
-          <TouchableOpacity
-            key={preset.days}
-            style={[
-              style.presetChip,
-              selectedPreset === preset.days && style.presetChipActive,
-            ]}
-            onPress={() => aplicarPresetReflexao(preset.days)}
-          >
-            <Text
-              style={[
-                style.presetChipText,
-                selectedPreset === preset.days && style.presetChipTextActive,
-              ]}
-            >
-              {preset.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <TouchableOpacity style={style.dateButton} onPress={() => setShowPicker(true)}>
-        {/* Mostra a data, horas e minutos escolhidos no botão */}
-        <Text style={style.dateText}>
-          📅 {dataAlvo.toLocaleDateString()} às {dataAlvo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      <TouchableOpacity style={style.reflectionSelectButton} onPress={abrirCalendario}>
+        <Text style={style.reflectionSelectText}>
+          Selecionar dia no calendário
         </Text>
       </TouchableOpacity>
 
-      {showPicker && (
-        <View style={style.pickerWrapper}>
-          <DateTimePicker 
-            value={dataAlvo} 
-            mode="datetime"       // <--- Ativa Data + Hora juntas
-            display="spinner"     // <--- Força o efeito de rodas para deslizar
-            onChange={handleDateChange} 
-            minimumDate={new Date()} 
-            textColor="#000000"   // Garante visibilidade no iOS
-          />
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity style={style.closeButtonIOS} onPress={() => setShowPicker(false)}>
-              <Text style={style.closeButtonTextIOS}>Confirmar</Text>
-            </TouchableOpacity>
-          )}
+      <TouchableOpacity style={style.dateButton}>
+        <Text style={style.dateText}>
+          📅 Liberação: {dataAlvo.toLocaleDateString()} às {dataAlvo.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent
+        visible={showDateModal}
+        onRequestClose={() => setShowDateModal(false)}
+      >
+        <View style={style.modalOverlay}>
+          <View style={style.modalCard}>
+            <Text style={style.modalTitle}>Selecionar Dia de Reflexão</Text>
+
+            <View style={style.pickerWrapper}>
+              {Platform.OS === 'web' ? (
+                <ScrollView style={style.webDateList}>
+                  {gerarOpcoesDiasWeb().map((dia) => {
+                    const chave = dia.toISOString();
+                    const selecionado =
+                      dia.toDateString() === tempDate.toDateString();
+
+                    return (
+                      <TouchableOpacity
+                        key={chave}
+                        style={[
+                          style.categoryItem,
+                          selecionado && style.selectedReflectionItem,
+                        ]}
+                        onPress={() => setTempDate(dia)}
+                      >
+                        <Text style={style.categoryItemText}>
+                          {dia.toLocaleDateString('pt-PT', {
+                            weekday: 'long',
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              ) : (
+                <DateTimePicker
+                  value={tempDate}
+                  mode="date"
+                  display={Platform.OS === 'android' ? 'calendar' : 'spinner'}
+                  onChange={handleReflectionDateChange}
+                  minimumDate={new Date()}
+                />
+              )}
+            </View>
+
+            <View style={style.newCategoryActions}>
+              <TouchableOpacity style={style.cancelSmallBtn} onPress={() => setShowDateModal(false)}>
+                <Text style={style.cancelSmallBtnText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={style.confirmSmallBtn} onPress={confirmarDataReflexao}>
+                <Text style={style.confirmSmallBtnText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      )}
+      </Modal>
 
       {isLoading ? (
         <ActivityIndicator size="large" color="#2ec4b6" />
@@ -341,33 +393,23 @@ const style = StyleSheet.create({
   placeholderText: {
     color: '#8f8f8f',
   },
-  presetRow: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    gap: 8,
-  },
-  presetChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+  reflectionSelectButton: {
+    height: 45,
     borderWidth: 1,
-    borderColor: '#b5e7e2',
-    backgroundColor: '#edf9f8',
-  },
-  presetChipActive: {
-    backgroundColor: '#2ec4b6',
     borderColor: '#2ec4b6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    marginBottom: 10,
+    backgroundColor: '#f2fffd',
   },
-  presetChipText: {
+  reflectionSelectText: {
     color: '#0f766e',
     fontWeight: '600',
-    fontSize: 12,
-  },
-  presetChipTextActive: {
-    color: '#ffffff',
+    fontSize: 14,
   },
   dateButton: { 
-    height: 48, 
+    minHeight: 48, 
     borderWidth: 1, 
     borderColor: '#2ec4b6', 
     borderRadius: 8, 
@@ -385,18 +427,10 @@ const style = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
     marginBottom: 20,
-    padding: 10
-  },
-  closeButtonIOS: {
-    alignItems: 'center',
     padding: 10,
-    backgroundColor: '#2ec4b6',
-    borderRadius: 6,
-    marginTop: 10
   },
-  closeButtonTextIOS: {
-    color: '#fff',
-    fontWeight: 'bold'
+  webDateList: {
+    maxHeight: 260,
   },
   submitButton: {
     backgroundColor: '#2ec4b6',
@@ -433,8 +467,13 @@ const style = StyleSheet.create({
   },
   categoryItem: {
     paddingVertical: 12,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#ececec',
+  },
+  selectedReflectionItem: {
+    backgroundColor: '#e8fffb',
+    borderRadius: 6,
   },
   categoryItemText: {
     fontSize: 15,

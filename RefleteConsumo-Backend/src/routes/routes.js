@@ -231,7 +231,8 @@ router.post('/desejos', verificarToken, async (req, res) => {
       utilizadorId: req.utilizador.id,
       dataRegisto: new Date(),
       dataLiberacao,
-      status: 'em_reflexao'
+      status: 'em_reflexao',
+      jaRefletiu: dataLiberacao.getTime() <= Date.now(),
     };
     await devicesCollection.insertOne(novoDesejo);
     res.status(201).json(novoDesejo);
@@ -245,8 +246,23 @@ router.post('/desejos/decidir', verificarToken, async (req, res) => {
   try {
     const { desejoId, comprar } = req.body;
     const status = comprar ? 'comprado' : 'descartado';
-    
     const devicesCollection = getCollection('desejos');
+
+    if (comprar) {
+      const desejo = await devicesCollection.findOne({
+        _id: new pkg.ObjectId(desejoId),
+        utilizadorId: req.utilizador.id,
+      });
+
+      if (!desejo) {
+        return res.status(404).json({ error: 'Desejo não encontrado.' });
+      }
+
+      if (!desejo.jaRefletiu) {
+        return res.status(400).json({ error: 'É necessário confirmar "Já refleti" antes de comprar.' });
+      }
+    }
+
     await devicesCollection.updateOne(
       { _id: new pkg.ObjectId(desejoId), utilizadorId: req.utilizador.id },
       { $set: { status } }
@@ -254,6 +270,30 @@ router.post('/desejos/decidir', verificarToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao processar decisão.' });
+  }
+});
+
+// 3.1 ROTA POST - Confirmar reflexão manualmente
+router.post('/desejos/refletir', verificarToken, async (req, res) => {
+  try {
+    const { desejoId } = req.body;
+    if (!desejoId) {
+      return res.status(400).json({ error: 'desejoId é obrigatório.' });
+    }
+
+    const devicesCollection = getCollection('desejos');
+    const result = await devicesCollection.updateOne(
+      { _id: new pkg.ObjectId(desejoId), utilizadorId: req.utilizador.id, status: 'em_reflexao' },
+      { $set: { jaRefletiu: true } }
+    );
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: 'Desejo não encontrado ou já decidido.' });
+    }
+
+    res.json({ success: true, message: 'Reflexão confirmada com sucesso.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao confirmar reflexão.' });
   }
 });
 

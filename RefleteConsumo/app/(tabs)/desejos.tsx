@@ -35,7 +35,8 @@ export default function TabTwoScreen() {
       if (!desejosResponse.ok) throw new Error('Erro na API');
 
       const data = await desejosResponse.json();
-      setDesejos(data);
+      // Hide items already bought because they are shown in Gastos screen.
+      setDesejos((Array.isArray(data) ? data : []).filter((item) => item.status !== 'comprado'));
 
       if (perfilResponse.ok) {
         const perfilData = await perfilResponse.json();
@@ -75,11 +76,33 @@ export default function TabTwoScreen() {
 
   useFocusEffect(useCallback(() => { buscarDesejos(); }, []));
 
+  const marcarRefletidoLocalmente = (desejoId: string) => {
+    setDesejos((prev) =>
+      prev.map((item) =>
+        item._id === desejoId ? { ...item, jaRefletiu: true } : item
+      )
+    );
+  };
+
+  const confirmarReflexaoNoServidor = async (desejoId: string) => {
+    const token = await AsyncStorage.getItem('userToken');
+    const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos/refletir', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ desejoId }),
+    });
+
+    return response;
+  };
+
   // Envia a decisão de comprar ou cancelar para o Servidor
   const handleDecidir = async (desejoId: string, comprar: boolean) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos/decidir', {
+      let response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos/decidir', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -88,6 +111,27 @@ export default function TabTwoScreen() {
         body: JSON.stringify({ desejoId, comprar }),
       });
 
+      if (!response.ok && comprar) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = String(errorData?.error || '');
+
+        // Se o backend exigir confirmação de reflexão, confirma e tenta comprar de novo.
+        if (errorMessage.toLowerCase().includes('refleti')) {
+          const refletirResponse = await confirmarReflexaoNoServidor(desejoId);
+          if (refletirResponse.ok) {
+            marcarRefletidoLocalmente(desejoId);
+            response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos/decidir', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ desejoId, comprar }),
+            });
+          }
+        }
+      }
+
       if (response.ok) {
         Alert.alert(
           'Sucesso!', 
@@ -95,10 +139,29 @@ export default function TabTwoScreen() {
         );
         buscarDesejos(); // Recarrega a lista para atualizar o ecrã na hora
       } else {
-        Alert.alert('Erro', 'Não foi possível processar a tua decisão.');
+        const errorData = await response.json().catch(() => ({}));
+        Alert.alert('Erro', errorData.error || 'Não foi possível processar a tua decisão.');
       }
     } catch (error) {
       Alert.alert('Erro', 'Falha na ligação ao servidor.');
+    }
+  };
+
+  const handleJaRefleti = async (desejoId: string) => {
+    // Desbloqueia imediatamente no UI para evitar fricção ao utilizador.
+    marcarRefletidoLocalmente(desejoId);
+
+    try {
+      const response = await confirmarReflexaoNoServidor(desejoId);
+
+      if (response.ok) {
+        Alert.alert('Success', 'Reflection confirmed. You can now buy this product.');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        Alert.alert('Warning', errorData.error || 'Reflection was unlocked locally. Server confirmation failed.');
+      }
+    } catch (error) {
+      Alert.alert('Warning', 'Reflection was unlocked locally. Server is currently unavailable.');
     }
   };
 
@@ -143,6 +206,7 @@ export default function TabTwoScreen() {
           ListEmptyComponent={<Text style={styles.emptyText}>Nenhum desejo encontrado.</Text>}
           renderItem={({ item }) => {
             const jaTerminou = new Date(item.dataLiberacao).getTime() - new Date().getTime() <= 0;
+            const jaRefletiu = !!item.jaRefletiu;
             const categoria = item.categoria || item.category || 'Outros';
             const precoItem = parseFloat(String(item.preco).replace(',', '.')) || 0;
             const horasNecessarias = calcularHorasParaCompra(precoItem);
@@ -175,8 +239,17 @@ export default function TabTwoScreen() {
                   </Text>
                 )}
 
-                {/* Botões de Ação: Aparecem apenas se o tempo acabou e continua em reflexão */}
-                {item.status === 'em_reflexao' && jaTerminou && (
+                {item.status === 'em_reflexao' && !jaRefletiu && (
+                  <TouchableOpacity
+                    style={styles.reflectButton}
+                    onPress={() => handleJaRefleti(item._id)}
+                  >
+                    <Text style={styles.btnText}>Já refleti</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Botões de Ação: Só aparecem após o utilizador confirmar que já refletiu */}
+                {item.status === 'em_reflexao' && jaRefletiu && (
                   <View style={styles.actionRow}>
                     <TouchableOpacity 
                       style={styles.buyButton} 
@@ -213,6 +286,7 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginTop: 50, color: '#888' },
   cooldownText: { fontSize: 13, color: '#e63946', marginTop: 6, fontWeight: 'bold' },
   readyText: { color: '#2ec4b6', marginBottom: 5 },
+  reflectButton: { backgroundColor: '#457b9d', paddingVertical: 10, borderRadius: 6, alignItems: 'center', marginTop: 10 },
   
   actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, borderTopWidth: 1, borderTopColor: '#eee', paddingTop: 12 },
   buyButton: { backgroundColor: '#2ec4b6', flex: 1, marginRight: 6, paddingVertical: 10, borderRadius: 6, alignItems: 'center' },
