@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { Tabs, useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { HapticTab } from '@/components/haptic-tab';
@@ -12,23 +12,46 @@ export default function TabLayout() {
   const [showSmokeTracker, setShowSmokeTracker] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const checkPerfil = async () => {
-      try {
-        const isFumador = await AsyncStorage.getItem('isFumador');
-        if (isFumador === 'true') {
-          setShowSmokeTracker(true);
-        } else {
-          setShowSmokeTracker(false);
-        }
-      } catch (error) {
-        console.error("Erro ao ler perfil no layout:", error);
-      } finally {
+  const checkPerfil = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        setShowSmokeTracker(false);
         setIsLoading(false);
+        return;
       }
-    };
-    checkPerfil();
+      
+      const response = await fetch('https://refleteconsumo-api.onrender.com/api/perfil', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const user = await response.json();
+        console.log('👤 Perfil carregado:', { isFumador: user.isFumador, tipo: typeof user.isFumador });
+        // Verifica se isFumador é true (boolean, string 'true', ou número 1)
+        const isSmoker = user.isFumador === true || user.isFumador === 'true' || user.isFumador === 1;
+        setShowSmokeTracker(isSmoker);
+      } else {
+        setShowSmokeTracker(false);
+      }
+    } catch (error) {
+      console.error("Erro ao ler perfil no layout:", error);
+      setShowSmokeTracker(false);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    checkPerfil();
+  }, [checkPerfil]);
+
+  // Recarregar perfil sempre que a aba fica visível
+  useFocusEffect(
+    useCallback(() => {
+      checkPerfil();
+    }, [checkPerfil])
+  );
 
   if (isLoading) return null;
 
@@ -64,13 +87,20 @@ export default function TabLayout() {
         }}
       />
 
-      {/* ROTA DO SMOKE: Agora sempre declarada, mas oculta dinamicamente via href */}
+      <Tabs.Screen
+        name="tips"
+        options={{
+          title: 'Ideias',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="lightbulb.fill" color={color} />,
+        }}
+      />
+
       <Tabs.Screen
         name="smoke"
         options={{
           title: 'Smoke',
-          tabBarHref: showSmokeTracker ? undefined : null, // <-- Remove do menu se for false de forma limpa!
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="smoke.fill" color={color} />,
+          href: showSmokeTracker ? '/smoke' : null,
         }}
       />
       

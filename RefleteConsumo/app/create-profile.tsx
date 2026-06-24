@@ -13,8 +13,22 @@ export default function CreateProfileScreen() {
     if (!genero) return Alert.alert('Atenção', 'Por favor, selecione um género.');
     setIsLoading(true);
     try {
-      await AsyncStorage.setItem('isFumador', JSON.stringify(isFumador));
-      router.replace('/(tabs)');
+      const token = await AsyncStorage.getItem('userToken');
+      
+      // Atualizar perfil no MongoDB
+      const response = await fetch('https://refleteconsumo-api.onrender.com/api/update-perfil', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ genero, isFumador })
+      });
+
+      if (!response.ok) throw new Error('Erro ao atualizar perfil');
+      
+      // Redirecionar para o Quiz
+      router.replace('/quiz');
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar o perfil.');
     } finally {

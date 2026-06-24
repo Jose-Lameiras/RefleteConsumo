@@ -10,6 +10,7 @@ export default function PerfilScreen() {
   const [email, setEmail] = useState<string>('');
   const [genero, setGenero] = useState<string>('');
   const [isFumador, setIsFumador] = useState<boolean>(false);
+  const [salario, setSalario] = useState<string>('');
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
@@ -29,6 +30,7 @@ export default function PerfilScreen() {
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
+      const salarioLocal = await AsyncStorage.getItem('userSalary');
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/perfil', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -39,10 +41,10 @@ export default function PerfilScreen() {
         setEmail(data.email || '');
         setGenero(data.genero || '');
         setIsFumador(!!data.isFumador);
+        const salarioServidor =
+          data.salario !== undefined && data.salario !== null ? String(data.salario) : '';
+        setSalario(salarioServidor || salarioLocal || '');
       }
-      
-      const foto = await AsyncStorage.getItem('userImage');
-      setImage(foto);
     } catch (error) {
       Alert.alert("Erro", "Não foi possível carregar os dados do servidor.");
     } finally {
@@ -61,7 +63,6 @@ export default function PerfilScreen() {
     if (!result.canceled) {
       const uri = result.assets[0].uri;
       setImage(uri);
-      await AsyncStorage.setItem('userImage', uri);
     }
   };
 
@@ -69,14 +70,27 @@ export default function PerfilScreen() {
   const handleGuardar = async () => {
     setIsLoading(true);
     try {
+      const salarioNormalizado = salario.trim().replace(',', '.');
+      const salarioNumerico = salarioNormalizado ? parseFloat(salarioNormalizado) : null;
+
+      if (salarioNormalizado && (isNaN(salarioNumerico as number) || (salarioNumerico as number) <= 0)) {
+        throw new Error('Introduz um salário mensal válido.');
+      }
+
       const token = await AsyncStorage.getItem('userToken');
       
       // Atualizar dados do perfil
       const response = await fetch('https://refleteconsumo-api.onrender.com/api/update-perfil', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ nome, email, genero, isFumador }),
+        body: JSON.stringify({ nome, email, genero, isFumador, salario: salarioNumerico }),
       });
+
+      if (salarioNumerico !== null) {
+        await AsyncStorage.setItem('userSalary', String(salarioNumerico));
+      } else {
+        await AsyncStorage.removeItem('userSalary');
+      }
 
       if (!response.ok) throw new Error("Erro ao atualizar dados do perfil.");
 
@@ -133,6 +147,15 @@ export default function PerfilScreen() {
               <Text>{g}</Text>
             </TouchableOpacity>
           ))}
+
+          <Text style={styles.inputLabel}>Salário Mensal (€)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: 1200"
+            keyboardType="numeric"
+            value={salario}
+            onChangeText={setSalario}
+          />
           
           <View style={styles.switchRow}>
             <Text style={{fontWeight: 'bold'}}>És fumador?</Text>
@@ -160,9 +183,11 @@ export default function PerfilScreen() {
           <View style={styles.infoCard}><Text style={styles.label}>Nome:</Text><Text style={styles.val}>{nome || 'Não definido'}</Text></View>
           <View style={styles.infoCard}><Text style={styles.label}>Email:</Text><Text style={styles.val}>{email || 'Não definido'}</Text></View>
           <View style={styles.infoCard}><Text style={styles.label}>Género:</Text><Text style={styles.val}>{genero || 'Não definido'}</Text></View>
+          <View style={styles.infoCard}><Text style={styles.label}>Salário Mensal:</Text><Text style={styles.val}>{salario ? `${parseFloat(salario).toFixed(2)}€` : 'Não definido'}</Text></View>
           <View style={styles.infoCard}><Text style={styles.label}>Fumador:</Text><Text style={styles.val}>{isFumador ? 'Sim' : 'Não'}</Text></View>
           
           <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}><Text style={styles.btnText}>Editar Perfil</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.quizButton} onPress={() => router.push('/quiz')}><Text style={styles.btnText}>Fazer Quiz</Text></TouchableOpacity>
         </View>
       )}
 
@@ -190,6 +215,7 @@ const styles = StyleSheet.create({
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 15 },
   saveButton: { backgroundColor: '#2a9d8f', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 25 },
   editButton: { backgroundColor: '#264653', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 20 },
+  quizButton: { backgroundColor: '#457b9d', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 12 },
   btnText: { color: '#fff', fontWeight: 'bold' },
   logoutButton: { marginTop: 40, alignItems: 'center', padding: 15, marginBottom: 30 },
   logoutText: { color: 'red', fontWeight: 'bold' }

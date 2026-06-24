@@ -5,8 +5,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabTwoScreen() {
   const [desejos, setDesejos] = useState<any[]>([]);
+  const [salarioMensal, setSalarioMensal] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [, setTick] = useState(0); // Força o ecrã a atualizar a contagem a cada segundo
+  const HORAS_TRABALHO_DIA = 8;
+  const DIAS_TRABALHO_MES = 22;
 
   // Ativa uma atualização a cada 1 segundo para manter a contagem decrescente viva
   useEffect(() => {
@@ -20,20 +23,54 @@ export default function TabTwoScreen() {
     try {
       setIsLoading(true);
       const token = await AsyncStorage.getItem('userToken');
-      const response = await fetch('https://refleteconsumo-api.onrender.com/api/desejos', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!response.ok) throw new Error('Erro na API');
-      
-      const data = await response.json();
+      const [desejosResponse, perfilResponse] = await Promise.all([
+        fetch('https://refleteconsumo-api.onrender.com/api/desejos', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('https://refleteconsumo-api.onrender.com/api/perfil', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+      ]);
+
+      if (!desejosResponse.ok) throw new Error('Erro na API');
+
+      const data = await desejosResponse.json();
       setDesejos(data);
+
+      if (perfilResponse.ok) {
+        const perfilData = await perfilResponse.json();
+        const salario = parseFloat(perfilData?.salario);
+        if (!isNaN(salario) && salario > 0) {
+          setSalarioMensal(salario);
+        } else {
+          const salarioLocal = await AsyncStorage.getItem('userSalary');
+          const salarioLocalNum = parseFloat(salarioLocal || '');
+          setSalarioMensal(!isNaN(salarioLocalNum) && salarioLocalNum > 0 ? salarioLocalNum : null);
+        }
+      } else {
+        const salarioLocal = await AsyncStorage.getItem('userSalary');
+        const salarioLocalNum = parseFloat(salarioLocal || '');
+        setSalarioMensal(!isNaN(salarioLocalNum) && salarioLocalNum > 0 ? salarioLocalNum : null);
+      }
     } catch (error) {
       console.log("Erro na busca:", error);
       Alert.alert('Erro', 'Não consegui ligar ao servidor.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const calcularHorasParaCompra = (precoProduto: number) => {
+    if (!salarioMensal || salarioMensal <= 0 || precoProduto <= 0) {
+      return null;
+    }
+
+    const ganhoHora = salarioMensal / (DIAS_TRABALHO_MES * HORAS_TRABALHO_DIA);
+    if (ganhoHora <= 0) {
+      return null;
+    }
+
+    return precoProduto / ganhoHora;
   };
 
   useFocusEffect(useCallback(() => { buscarDesejos(); }, []));
@@ -106,11 +143,24 @@ export default function TabTwoScreen() {
           ListEmptyComponent={<Text style={styles.emptyText}>Nenhum desejo encontrado.</Text>}
           renderItem={({ item }) => {
             const jaTerminou = new Date(item.dataLiberacao).getTime() - new Date().getTime() <= 0;
+            const categoria = item.categoria || item.category || 'Outros';
+            const precoItem = parseFloat(String(item.preco).replace(',', '.')) || 0;
+            const horasNecessarias = calcularHorasParaCompra(precoItem);
 
             return (
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>{item.nome}</Text>
-                <Text style={styles.cardInfo}>💰 {item.preco}€ | 📂 {item.categoria}</Text>
+                <Text style={styles.cardInfo}>💰 {item.preco}€</Text>
+                <Text style={styles.cardInfo}>📂 Categoria: {categoria}</Text>
+                {horasNecessarias !== null ? (
+                  <Text style={styles.workHoursText}>
+                    🕒 Precisa de {horasNecessarias.toFixed(1)}h de trabalho para comprar
+                  </Text>
+                ) : (
+                  <Text style={styles.workHoursHint}>
+                    💬 Defina o salário no Perfil para calcular horas de trabalho
+                  </Text>
+                )}
                 
                 <Text style={{ marginTop: 5, color: '#666', fontWeight: '500' }}>
                   Status: {item.status === 'em_reflexao' ? 'Em reflexão' : item.status}
@@ -158,6 +208,8 @@ const styles = StyleSheet.create({
   card: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 15, elevation: 3 },
   cardTitle: { fontSize: 18, fontWeight: 'bold' },
   cardInfo: { color: '#444', marginTop: 3 },
+  workHoursText: { color: '#1f7a8c', marginTop: 5, fontWeight: '600' },
+  workHoursHint: { color: '#6c757d', marginTop: 5, fontSize: 12 },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#888' },
   cooldownText: { fontSize: 13, color: '#e63946', marginTop: 6, fontWeight: 'bold' },
   readyText: { color: '#2ec4b6', marginBottom: 5 },
