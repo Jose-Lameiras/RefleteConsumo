@@ -16,6 +16,9 @@ import {
   QuizResult,
 } from '@/constants/quiz-questions';
 
+const INTRO_STORAGE_KEY = 'hasSeenPostLoginIntro';
+const QUIZ_COMPLETED_KEY = 'quizCompleted';
+
 export default function QuizScreen() {
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -56,7 +59,8 @@ export default function QuizScreen() {
       // Guardar localmente
       await AsyncStorage.setItem('quizScore', result.score.toString());
       await AsyncStorage.setItem('quizPerfil', result.perfil);
-      await AsyncStorage.setItem('quizCompleted', 'true');
+      await AsyncStorage.setItem(QUIZ_COMPLETED_KEY, 'true');
+      await AsyncStorage.setItem(INTRO_STORAGE_KEY, 'true');
 
       // Enviar para backend
       const response = await fetch(

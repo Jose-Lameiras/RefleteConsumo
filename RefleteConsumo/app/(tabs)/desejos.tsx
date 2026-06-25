@@ -135,11 +135,11 @@ export default function TabTwoScreen() {
         body: JSON.stringify({ desejoId, comprar }),
       });
 
-      if (!response.ok && comprar) {
+      if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errorMessage = String(errorData?.error || '');
 
-        // Se o backend exigir confirmação de reflexão, confirma e tenta comprar de novo.
+        // Se o backend exigir confirmação de reflexão, confirma e tenta decidir de novo.
         if (errorMessage.toLowerCase().includes('refleti')) {
           const refletirResponse = await confirmarReflexaoNoServidor(desejoId);
           if (refletirResponse.ok) {
@@ -234,8 +234,11 @@ export default function TabTwoScreen() {
           keyExtractor={(item) => item._id}
           ListEmptyComponent={<Text style={styles.emptyText}>Nenhum desejo encontrado.</Text>}
           renderItem={({ item }) => {
-            const jaTerminou = new Date(item.dataLiberacao).getTime() - new Date().getTime() <= 0;
-            const jaRefletiu = !!item.jaRefletiu;
+            const jaTerminou = item.dataLiberacao
+              ? new Date(item.dataLiberacao).getTime() - new Date().getTime() <= 0
+              : false;
+            const podeDecidir = item.status === 'em_reflexao' || item.status === 'ultrapassado';
+            const jaRefletiu = !!item.jaRefletiu || jaTerminou;
             const categoria = item.categoria || item.category || 'Outros';
             const estadoEspirito = item.estadoEspirito || item.estadoDeEspirito || item.mood || 'Não definido';
             const precoItem = parseFloat(String(item.preco).replace(',', '.')) || 0;
@@ -280,7 +283,7 @@ export default function TabTwoScreen() {
                 )}
 
                 {/* Botões de Ação: Só aparecem após o utilizador confirmar que já refletiu */}
-                {item.status === 'em_reflexao' && jaRefletiu && (
+                {podeDecidir && jaRefletiu && (
                   <View style={styles.actionRow}>
                     <TouchableOpacity 
                       style={styles.buyButton} 

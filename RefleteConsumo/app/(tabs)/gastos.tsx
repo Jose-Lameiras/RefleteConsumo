@@ -171,6 +171,7 @@ export default function GastosScreen() {
       color: cores[index % cores.length],
       legendFontColor: '#333',
       legendFontSize: 12,
+      legendFontFamily: 'System',
     }));
   };
 

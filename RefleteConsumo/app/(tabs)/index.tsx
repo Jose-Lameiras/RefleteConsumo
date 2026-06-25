@@ -296,7 +296,7 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      <Text style={style.label}>Definir Data e Hora de Libertação:</Text>
+      <Text style={style.label}>Definir tempo de reflexão:</Text>
       <TouchableOpacity style={style.reflectionSelectButton} onPress={abrirCalendario}>
         <Text style={style.reflectionSelectText}>
           Selecionar dia no calendário

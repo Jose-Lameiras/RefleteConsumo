@@ -3,8 +3,11 @@ import { ActivityIndicator, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const INTRO_STORAGE_KEY = 'hasSeenPostLoginIntro';
+const QUIZ_COMPLETED_KEY = 'quizCompleted';
+
 export default function Index() {
-  const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+  const [routeTarget, setRouteTarget] = useState<'loading' | 'login' | 'intro' | 'quiz' | 'tabs'>('loading');
 
   useEffect(() => {
     const verificarSessao = async () => {
@@ -12,7 +15,7 @@ export default function Index() {
         const token = await AsyncStorage.getItem('userToken');
         
         if (!token) {
-          setAuthStatus('unauthenticated');
+          setRouteTarget('login');
           return;
         }
 
@@ -23,21 +26,30 @@ export default function Index() {
         });
 
         if (response.ok) {
-          setAuthStatus('authenticated');
+          const hasSeenIntro = await AsyncStorage.getItem(INTRO_STORAGE_KEY);
+          const hasCompletedQuiz = await AsyncStorage.getItem(QUIZ_COMPLETED_KEY);
+
+          if (hasSeenIntro !== 'true') {
+            setRouteTarget('intro');
+          } else if (hasCompletedQuiz !== 'true') {
+            setRouteTarget('quiz');
+          } else {
+            setRouteTarget('tabs');
+          }
         } else {
           // Token inválido ou expirado
           await AsyncStorage.removeItem('userToken');
-          setAuthStatus('unauthenticated');
+          setRouteTarget('login');
         }
       } catch (error) {
-        setAuthStatus('unauthenticated');
+        setRouteTarget('login');
       }
     };
 
     verificarSessao();
   }, []);
 
-  if (authStatus === 'loading') {
+  if (routeTarget === 'loading') {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
         <ActivityIndicator size="large" color="#2ec4b6" />
@@ -45,5 +57,9 @@ export default function Index() {
     );
   }
 
-  return authStatus === 'authenticated' ? <Redirect href="/(tabs)" /> : <Redirect href="/login" />;
+  if (routeTarget === 'login') return <Redirect href="/login" />;
+  if (routeTarget === 'intro') return <Redirect href="/intro" />;
+  if (routeTarget === 'quiz') return <Redirect href="/quiz" />;
+
+  return <Redirect href="/(tabs)" />;
 }
